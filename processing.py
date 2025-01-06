@@ -2,18 +2,20 @@ import torch
 from transformers import Blip2Processor, Blip2ForConditionalGeneration
 from PIL import Image
 import cv2
+import csv
 import numpy as np
 import piexif
 import piexif.helper
 from PIL.PngImagePlugin import PngInfo
 
-#画像を解析し、キャプションを生成するクラス。
 class ImageAnalyzer:
+    """画像を解析し、キャプションを生成するクラス"""
     def __init__(self):
         self.processor = None
         self.model = None
-    #BLIP-2モデルをロードするメソッド
+    
     def load_model(self):
+        """BLIP-2モデルをロードするメソッド"""
         if self.model is None:
             self.processor = Blip2Processor.from_pretrained("Salesforce/blip2-opt-2.7b")
             self.model = Blip2ForConditionalGeneration.from_pretrained(
@@ -22,15 +24,16 @@ class ImageAnalyzer:
                 torch_dtype=torch.float16,
                 low_cpu_mem_usage=True
             )
-    #画像を前処理するメソッド
+    
     def preprocess_image(self, image_path):
+        """画像を前処理するメソッド"""
         image = cv2.imdecode(np.fromfile(image_path, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        image = cv2.resize(image, (224, 224))
+        image = cv2.resize(image, (192, 192))
         return Image.fromarray(image)
 
-    #画像を解析し、キャプションを生成するメソッド
     def analyze_image(self, image_path):
+        """画像を解析し、キャプションを生成するメソッド"""
         try:
             image = self.preprocess_image(image_path)
             inputs = self.processor(image, return_tensors="pt").to(self.model.device)
@@ -41,70 +44,39 @@ class ImageAnalyzer:
         except Exception as e:
             return f"エラーが発生しました: {str(e)}"
         
-#画像のメタデータを管理するクラス
 class MetadataManager:
+    """画像のメタデータを管理するクラス"""
+    
     @staticmethod
-    def write_metadata(file_path, caption):
-        ext = file_path.lower().split('.')[-1]
+    def update_image_metadata(file_path, metadata):
+        """メタデータを実際に画像に書き込むメソッド"""
+        ext = file_path.lower().split(".")[-1]
         img = Image.open(file_path)
 
-        if ext in ['jpg', 'jpeg']:
-            exif_dict = piexif.load(img.info.get("exif", piexif.dump({"0th":{}, "Exif":{}, "GPS":{}, "1st":{}, "thumbnail":None})))
-            exif_dict["0th"][piexif.ImageIFD.ImageDescription] = caption.encode()
-            img.save(file_path, exif=piexif.dump(exif_dict))
-        elif ext == 'png':
-            metadata = PngInfo()
+        if ext == "png":
+            png_info = PngInfo()
             for key, value in img.info.items():
                 if isinstance(value, str):
-                    metadata.add_text(key, value)
-            metadata.add_text("Description", caption)
-            img.save(file_path, pnginfo=metadata)
-        elif ext == 'webp':
-            metadata = img.info.copy()
-            metadata['Description'] = caption
-            img.save(file_path, **metadata)
+                    png_info.add_text(key, value)
+            # parametersに追記する
+            if "parameters" in metadata:
+                png_info.add_text("parameters", metadata["parameters"])
+            img.save(file_path, pnginfo=png_info)
+        elif ext == "webp":
+            # UserCommentに書き込む
+            exif_dict = piexif.load(img.info.get("exif", b""))
+            exif_dict["Exif"][piexif.ExifIFD.UserComment] = piexif.helper.UserComment.dump(
+                metadata.get("exif", ""),
+                encoding="unicode"
+            )
+            exif_bytes = piexif.dump(exif_dict)
+            img.save(file_path, exif=exif_bytes)
         else:
             raise ValueError("Unsupported file format")
 
-    #webpファイルのバイト列からExif UserCommentを取得するメソッド
-    def get_corrupted_user_comment(file_content):
-        # UserCommentタグのID
-        user_comment_tag_id = b'\x92\x86'
-
-        # タグIDの位置を探す
-        tag_start = file_content.find(user_comment_tag_id, 0x20)  # 0x20以降で検索
-
-        if tag_start == -1:
-            return "UserComment tag not found."
-
-        # データタイプの特定
-        data_type_start = tag_start + 2
-        data_type = file_content[data_type_start:data_type_start + 2]
-
-        # コンポーネント数の特定
-        component_count_start = data_type_start + 2
-        component_count = int.from_bytes(file_content[component_count_start:component_count_start + 4], byteorder='big')
-
-        # オフセットの特定
-        offset_start = component_count_start + 4
-        offset = int.from_bytes(file_content[offset_start:offset_start + 4], byteorder='big')
-
-        # UserCommentのバイナリデータを取得
-        user_comment_data = file_content[offset : offset+component_count]
-
-        # データのデコード (UNICODEかつUTF-16BEを想定)
-        try:
-            if user_comment_data.startswith(b'UNICODE\x00'):
-                decoded_value = user_comment_data[8:].decode('utf-16be', errors='ignore')
-            else:
-                decoded_value = user_comment_data.decode('utf-8', errors='ignore')
-            return decoded_value
-        except UnicodeDecodeError:
-            return "Could not decode UserComment data."
-
-    #画像ファイルからメタデータを読み込むメソッド
     @staticmethod
     def read_metadata(file_path):
+        """画像ファイルからメタデータを読み込むメソッド"""
         with Image.open(file_path) as img:
             metadata = {}
             if img.format == "PNG" and "parameters" in img.info:
@@ -113,27 +85,66 @@ class MetadataManager:
                 exif_dict = piexif.load(img.info["exif"])
                 user_comment = exif_dict.get("Exif", {}).get(piexif.ExifIFD.UserComment)
                 if user_comment:
-                    metadata['Exif UserComment'] = piexif.helper.UserComment.load(user_comment)
+                    metadata['exif'] = piexif.helper.UserComment.load(user_comment)
             return metadata
 
-    #Exif UserCommentをデコードするメソッド
-    @staticmethod
-    def decode_user_comment(user_comment):
-        if user_comment.startswith(b'UNICODE\x00'):
-            return user_comment[8:].decode('utf-16be', errors='ignore')
-        return user_comment.decode('utf-8', errors='ignore')
-
-    #メタデータからプロンプトを抽出するメソッド
     @staticmethod
     def extract_prompts(text):
+        """メタデータからポジティブプロンプト、ネガティブプロンプトを抽出するメソッド"""
         lines = text.split('\n')
-        positive_prompt, negative_prompt = [], []
+        positive_prompt, negative_prompt, others = [], [], []
+
+        #ポジティブプロンプト、ネガティブプロンプト、それ以外の判別用
+        is_positive = True
         is_negative = False
+
         for line in lines:
             if line.startswith("Negative prompt: "):
+                is_positive = False
                 is_negative = True
                 line = line.replace("Negative prompt: ", "")
             elif line.startswith("Steps:"):
-                break
-            (negative_prompt if is_negative else positive_prompt).append(line.strip())
-        return " ".join(positive_prompt).strip(), " ".join(negative_prompt).strip()
+                is_negative = False
+                is_positive = False
+            
+            if is_negative:
+                negative_prompt.append(line.strip())
+            elif is_positive:
+                positive_prompt.append(line.strip())
+            else:
+                others.append(line.strip())
+
+        #ポジティブプロンプトのみでネガティブ、その他も空の場合にはプロンプトを空と見なし、その他に集約する。
+        if not negative_prompt and not others:
+            others = positive_prompt
+            positive_prompt.clear
+
+        return " ".join(positive_prompt).strip(), " ".join(negative_prompt).strip(), " ".join(others).strip()
+    
+    def add_blip_caption(self, metadata, caption):
+        """BLIP-2のキャプションをプロンプトに追加するメソッド"""
+
+        # メタデータからプロンプトを抽出
+        metadata_text = metadata.get('parameters', '') or metadata.get('exif', '')
+        positive_prompt, negative_prompt, others = self.extract_prompts(metadata_text)
+
+        # BLIP-2のキャプションをpositive_promptの直後に追加
+        positive_prompt += f", {caption}"
+
+        # 更新されたプロンプトをメタデータに書き戻す
+        updated_prompt = f"{positive_prompt}\nNegative prompt: {negative_prompt}\n{others}"
+        if "parameters" in metadata:
+            metadata["parameters"] = updated_prompt
+        if "exif" in metadata:
+            metadata["exif"] = updated_prompt
+
+        return metadata
+
+    def save_metadata_to_csv(self, metadata, file_name, current_caption):
+        """メタデータをCSVファイルに保存するメソッド"""
+        output_file = "G:/マイドライブ/sd関連データ/styles.csv"
+        metadata_text = metadata.get('parameters', '') or metadata.get('exif', '')
+        positive_prompt, negative_prompt,_ = self.extract_prompts(metadata_text)
+        with open(output_file, "a", newline='', encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow([f"<過去作>{file_name}", f"{positive_prompt}, {current_caption}", negative_prompt])

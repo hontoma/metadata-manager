@@ -1,14 +1,11 @@
 import tkinter as tk
 from tkinterdnd2 import DND_FILES, TkinterDnD
 import threading
-import csv
 import os
-from PIL import Image
-from PIL.PngImagePlugin import PngInfo
 from processing import MetadataManager
 
-#画像解析アプリケーションのGUIを作成するクラス
 class ImageAnalyzerApp(TkinterDnD.Tk):
+    """画像解析アプリケーションのGUIを作成するクラス"""
     def __init__(self, analyzer):
         super().__init__()
         self.title("Image Analyzer")
@@ -18,8 +15,8 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         self.create_widgets()
         self.metadata_manager = MetadataManager()
 
-    #ウィジェットを定義し作成するメソッド
     def create_widgets(self):
+        """ウィジェットを定義し作成するメソッド"""
         # ドロップエリアの設定
         self.drop_area = tk.Frame(self, bg="#e0e0e0", width=700, height=100, relief="groove", bd=2)
         self.drop_area.pack(pady=20, padx=20, fill=tk.X)
@@ -60,30 +57,30 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         self.button_frame.pack(pady=10)
         self.analyze_button = tk.Button(self.button_frame, text="BLIP-2で解析", command=self.analyze_with_blip, bg="#2196F3", fg="white", font=("Arial", 10, "bold"), padx=20, pady=5)
         self.analyze_button.pack(side=tk.LEFT, padx=10)
-        self.write_button = tk.Button(self.button_frame, text="解析データを画像に保存", command=self.write_analysis_data_to_image, bg="#4CAF50", fg="white", font=("Arial", 10, "bold"), padx=20, pady=5)
+        self.write_button = tk.Button(self.button_frame, text="解析データを画像に保存", command=self.add_blip_caption_to_metadata, bg="#4CAF50", fg="white", font=("Arial", 10, "bold"), padx=20, pady=5)
         self.write_button.pack(side=tk.LEFT, padx=10)
         self.save_metadata_button = tk.Button(self.button_frame, text="メタデータをCSVファイルに保存", command=self.save_metadata_to_csv, bg="#FF9800", fg="white", font=("Arial", 10, "bold"), padx=20, pady=5)
         self.save_metadata_button.pack(side=tk.LEFT, padx=10)
         self.discard_button = tk.Button(self.button_frame, text="破棄", command=self.discard, bg="#f44336", fg="white", font=("Arial", 10, "bold"), padx=20, pady=5)
         self.discard_button.pack(side=tk.LEFT, padx=10)
 
-    #ドロップエリアのマウスオーバー時のイベント
     def on_enter(self, event):
+        """ドロップエリアのマウスオーバー時のイベント"""
         self.drop_area.config(bg="#d0d0d0")
         self.drop_label.config(bg="#d0d0d0")
-
-    #ドロップエリアからマウスが離れた時のイベント
+    
     def on_leave(self, event):
+        """ドロップエリアからマウスが離れた時のイベント"""
         self.drop_area.config(bg="#e0e0e0")
         self.drop_label.config(bg="#e0e0e0")
 
-    #画像ファイルをドロップした時のイベント
     def drop(self, event):
+        """画像ファイルをドロップした時のイベント"""
         file_path = event.data.strip("{}")
         self.current_file_name = os.path.basename(file_path)
         self.current_file_path = file_path
         if file_path.lower().endswith(('.png', '.webp')):
-            self.read_and_display_metadata(file_path)
+            self.display_metadata(file_path)
             self.update_status("画像をドロップしました。BLIP-2で解析ボタンを押して分析を開始してください。")
         else:
             self.result_text.delete(1.0, tk.END)
@@ -92,8 +89,8 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
             self.current_caption = None
             self.update_status("エラー: サポートされていないファイル形式")
 
-    #BLIP-2で画像を解析するメソッド
     def analyze_with_blip(self):
+        """BLIP-2で画像を解析するメソッド"""
         if self.current_file_path:
             self.update_status("BLIP-2モデルをロード中...")
             
@@ -103,8 +100,8 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         else:
             self.update_status("分析する画像がありません")
 
-    #BLIP-2のロードと解析を行うメソッド
     def run_blip_analysis(self):
+        """BLIP-2のロードと解析を行うメソッド"""
         self.analyzer.load_model()  # メインスレッドをブロックしないように、別スレッドでロード
         self.result_text.insert(tk.END, "\n画像を分析中...\n")
         result = self.analyzer.analyze_image(self.current_file_path)
@@ -112,8 +109,8 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         self.current_caption = result.split(": ", 1)[1]
         self.update_status("BLIP-2による画像分析が完了しました")
 
-    #メタデータを読み込み、表示するメソッド
-    def read_and_display_metadata(self, file_path):
+    def display_metadata(self, file_path):
+        """read_metadataメソッドからの戻り値であるメタデータを表示するメソッド"""
         try:
             metadata = self.metadata_manager.read_metadata(file_path)
             self.metadata_text.delete(1.0, tk.END)
@@ -127,23 +124,14 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
             self.current_metadata = None
             self.update_status("エラー: メタデータの読み込みに失敗")
 
-    #解析データを画像のメタデータに書き込むメソッド
-    def write_analysis_data_to_image(self):
+    def add_blip_caption_to_metadata(self):
+        """解析データを画像のメタデータに追加する"""
         if self.current_file_path and self.current_caption:
             try:
-                # 既存のメタデータを読み込む
                 metadata = self.metadata_manager.read_metadata(self.current_file_path)
-
-                # 解析データを既存のプロンプトの最後に追加
-                if "parameters" in metadata:
-                    metadata["parameters"] += f"\n\nBLIP-2 description: {self.current_caption}"
-                if "Exif UserComment" in metadata:
-                    metadata["Exif UserComment"] += f"\n\nBLIP-2 description: {self.current_caption}"
-                if "ImageDescription" in metadata:
-                    metadata["ImageDescription"] += f"\n\nBLIP-2 description: {self.current_caption}"
-
-                # 更新されたメタデータを書き込む
-                self.write_metadata(self.current_file_path, metadata)
+                # MetadataManagerクラスのadd_blip_captionメソッドを呼び出す
+                metadata = self.metadata_manager.add_blip_caption(metadata, self.current_caption)
+                self.metadata_manager.update_image_metadata(self.current_file_path, metadata)
 
                 self.result_text.insert(tk.END, "\n\n解析データをメタデータに書き込みました。")
                 self.update_status("解析データをメタデータに書き込みました")
@@ -154,43 +142,17 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
             self.result_text.insert(tk.END, "\n\n画像が選択されていないか、キャプションが生成されていません。")
             self.update_status("エラー: 画像またはキャプションがありません")
 
-    #メタデータを画像に書き込むメソッド
-    def write_metadata(self, file_path, metadata):
-        ext = file_path.lower().split(".")[-1]
-        img = Image.open(file_path)
-
-        if ext == "png":
-            png_info = PngInfo()
-            for key, value in img.info.items():
-                if isinstance(value, str):
-                    png_info.add_text(key, value)
-            # parametersに追記する
-            if "parameters" in metadata:
-                png_info.add_text("parameters", metadata["parameters"])
-            img.save(file_path, pnginfo=png_info)
-        elif ext == "webp":
-            # Exif UserCommentの値をdescriptionに書き込む
-            img.save(
-                file_path, description=metadata.get("Exif UserComment", "")
-            )
-        else:
-            raise ValueError("Unsupported file format")
-
-    #メタデータをCSVファイルに保存するメソッド
     def save_metadata_to_csv(self):
+        """メタデータをCSVファイルに保存するメソッド"""
         if self.current_metadata and self.current_file_name:
-            output_file = "G:/マイドライブ/sd関連データ/styles.csv"
-            metadata_text = self.current_metadata.get('parameters', '') or self.current_metadata.get('Exif UserComment', '')
-            positive_prompt, negative_prompt = self.metadata_manager.extract_prompts(metadata_text)
-            with open(output_file, "a", newline='', encoding="utf-8") as f:
-                writer = csv.writer(f)
-                writer.writerow([f"<過去作>{self.current_file_name}", positive_prompt, negative_prompt, self.current_caption])
-            self.update_status(f"テキスト情報を {output_file} に追記しました")
+            # MetadataManagerクラスのsave_metadata_to_csvメソッドを呼び出す
+            self.metadata_manager.save_metadata_to_csv(self.current_metadata, self.current_file_name, self.current_caption)
+            self.update_status(f"テキスト情報を styles.csv に追記しました")
         else:
             self.update_status("保存するメタデータがありません")
 
-    #分析結果を破棄するメソッド
     def discard(self):
+        """分析結果を破棄するメソッド"""
         self.current_file_path = None
         self.current_caption = None
         self.current_metadata = None
@@ -199,6 +161,6 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         self.result_text.insert(tk.END, "分析結果を破棄しました。新しい画像をドロップしてください。")
         self.update_status("分析結果を破棄しました")
 
-    #ステータスラベルを更新するメソッド
     def update_status(self, message):
+        """ステータスラベルを更新するメソッド"""
         self.status_label.config(text=message)
