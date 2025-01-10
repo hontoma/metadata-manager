@@ -40,7 +40,7 @@ class ImageAnalyzer:
             with torch.inference_mode():
                 outputs = self.model.generate(**inputs, min_length=50, max_new_tokens=200, num_beams=3, do_sample=True, temperature=0.8)
             caption_text = self.processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
-            return f"画像の説明: {caption_text}"
+            return caption_text
         except Exception as e:
             return f"エラーが発生しました: {str(e)}"
         
@@ -59,14 +59,13 @@ class MetadataManager:
                 if isinstance(value, str):
                     png_info.add_text(key, value)
             # parametersに追記する
-            if "parameters" in metadata:
-                png_info.add_text("parameters", metadata["parameters"])
+            png_info.add_text("parameters", metadata)
             img.save(file_path, pnginfo=png_info)
         elif ext == "webp":
             # UserCommentに書き込む
             exif_dict = piexif.load(img.info.get("exif", b""))
             exif_dict["Exif"][piexif.ExifIFD.UserComment] = piexif.helper.UserComment.dump(
-                metadata.get("exif", ""),
+                metadata,
                 encoding="unicode"
             )
             exif_bytes = piexif.dump(exif_dict)
@@ -85,7 +84,7 @@ class MetadataManager:
                 exif_dict = piexif.load(img.info["exif"])
                 user_comment = exif_dict.get("Exif", {}).get(piexif.ExifIFD.UserComment)
                 if user_comment:
-                    metadata['exif'] = piexif.helper.UserComment.load(user_comment)
+                    metadata['parameters'] = piexif.helper.UserComment.load(user_comment)
             return metadata
 
     @staticmethod
@@ -121,30 +120,20 @@ class MetadataManager:
 
         return " ".join(positive_prompt).strip(), " ".join(negative_prompt).strip(), " ".join(others).strip()
     
-    def add_blip_caption(self, metadata, caption):
+    def add_blip_caption(self, positive_prompt, negative_prompt, others, caption):
         """BLIP-2のキャプションをプロンプトに追加するメソッド"""
-
-        # メタデータからプロンプトを抽出
-        metadata_text = metadata.get('parameters', '') or metadata.get('exif', '')
-        positive_prompt, negative_prompt, others = self.extract_prompts(metadata_text)
 
         # BLIP-2のキャプションをpositive_promptの直後に追加
         positive_prompt += f", {caption}"
 
-        # 更新されたプロンプトをメタデータに書き戻す
+        # metadataの形を整形
         updated_prompt = f"{positive_prompt}\nNegative prompt: {negative_prompt}\n{others}"
-        if "parameters" in metadata:
-            metadata["parameters"] = updated_prompt
-        if "exif" in metadata:
-            metadata["exif"] = updated_prompt
 
-        return metadata
+        return updated_prompt
 
-    def save_metadata_to_csv(self, metadata, file_name, current_caption):
+    def save_metadata_to_csv(self, positive_prompt, negative_prompt, file_name, current_caption):
         """メタデータをCSVファイルに保存するメソッド"""
         output_file = "G:/マイドライブ/sd関連データ/styles.csv"
-        metadata_text = metadata.get('parameters', '') or metadata.get('exif', '')
-        positive_prompt, negative_prompt,_ = self.extract_prompts(metadata_text)
         with open(output_file, "a", newline='', encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow([f"<過去作>{file_name}", f"{positive_prompt}, {current_caption}", negative_prompt])
