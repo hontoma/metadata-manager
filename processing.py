@@ -7,6 +7,8 @@ import numpy as np
 import piexif
 import piexif.helper
 from PIL.PngImagePlugin import PngInfo
+from PIL import ExifTags, Image
+import os
 
 class ImageAnalyzer:
     """画像を解析し、キャプションを生成するクラス"""
@@ -137,3 +139,39 @@ class MetadataManager:
         with open(output_file, "a", newline='', encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow([f"<過去作>{file_name}", f"{positive_prompt}, {current_caption}", negative_prompt])
+
+    def remove_personal_data(self, file_path, original_file_name):
+        """画像からメタデータを削除しデスクトップに保存するメソッド"""
+        try:
+            # ファイルパスから波括弧を取り除く
+            file_path = file_path.strip('{}')
+
+            img = Image.open(file_path)
+            file_name, file_extension = os.path.splitext(original_file_name)
+
+            # 保存場所のパスを取得（デスクトップ）
+            desktop_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+            new_image_name = f"{file_name}_cleaned{file_extension}"
+            output_path = os.path.join(desktop_path, new_image_name)
+
+            if img.format == "PNG":
+                # PNGのテキストチャンクを削除
+                img_without_text = Image.new(img.mode, img.size)
+                img_without_text.putdata(list(img.getdata()))
+                img_without_text.save(output_path, "PNG")
+
+                return desktop_path, new_image_name
+
+            elif img.format == "WEBP":
+                # WEBPのEXIFデータを削除
+                img_without_exif = Image.new(img.mode, img.size)
+                img_without_exif.putdata(list(img.getdata()))
+                img_without_exif.save(output_path, "WEBP")
+
+                return desktop_path, new_image_name
+
+            else:
+                raise ValueError(f"このファイルの形式（{img.format}）はサポートされていません。")
+
+        except Exception as e:
+            raise Exception(f"処理中にエラーが発生しました: {e}")

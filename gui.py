@@ -10,7 +10,11 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
     """画像解析アプリケーションのGUIを作成するクラス"""
     def __init__(self, analyzer):
         super().__init__()
-        self.state("zoomed")
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        # タスクバーの高さを取得
+        taskbar_height = 85
+        self.geometry(f"{int(screen_width/2)}x{screen_height - taskbar_height}+0+0")
         self.title("Metadata Manager for SD webui Image")
         self.configure(bg="#f0f0f0")
         self.analyzer = analyzer
@@ -61,7 +65,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
             self.metadata_frame.rowconfigure(i, weight=1)
 
         # プロンプトエリア
-        self.prompt_label = tk.Label(self.metadata_frame, text="プロンプト", font=("Yu Gothic UI", 12), bg="#ffffff")
+        self.prompt_label = tk.Label(self.metadata_frame, text="プロンプト（編集可）", font=("Yu Gothic UI", 12), bg="#ffffff")
         self.prompt_label.grid(row=0, column=0, sticky=tk.EW, padx=5, pady=5)
         self.prompt_text = tk.Text(self.metadata_frame, height=5, font=("Yu Gothic UI", 11), wrap=tk.WORD)
         self.prompt_text.grid(row=1, column=0, columnspan=2, sticky=tk.NSEW, padx=5, pady=5)
@@ -70,7 +74,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         self.prompt_text.config(yscrollcommand=self.prompt_text_scrollbar.set)
 
         # ネガティブプロンプトエリア
-        self.negative_prompt_label = tk.Label(self.metadata_frame, text="ネガティブプロンプト", font=("Yu Gothic UI", 12), bg="#ffffff")
+        self.negative_prompt_label = tk.Label(self.metadata_frame, text="ネガティブプロンプト（編集可）", font=("Yu Gothic UI", 12), bg="#ffffff")
         self.negative_prompt_label.grid(row=2, column=0, sticky=tk.EW, padx=5, pady=5)
         self.negative_prompt_text = tk.Text(self.metadata_frame, height=5, font=("Yu Gothic UI", 11), wrap=tk.WORD)
         self.negative_prompt_text.grid(row=3, column=0, columnspan=2, sticky=tk.NSEW, padx=5, pady=5)
@@ -88,7 +92,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         self.others_text.config(yscrollcommand=self.others_text_scrollbar.set)
 
         # BLIP-2解析データ表示エリア
-        self.result_frame = tk.LabelFrame(main_frame, text="BLIP-2解析結果", font=("Yu Gothic UI", 12), bg="#ffffff", relief="sunken", bd=1)
+        self.result_frame = tk.LabelFrame(main_frame, text="BLIP-2解析結果（編集可）", font=("Yu Gothic UI", 12), bg="#ffffff", relief="sunken", bd=1)
         self.result_frame.pack(pady=10, padx=20, fill=tk.BOTH, expand=True)
         self.blip2_result = tk.Text(self.result_frame, height=2, width=80, font=("Yu Gothic UI", 11), wrap=tk.WORD)
         self.blip2_result.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5, pady=5)
@@ -101,19 +105,21 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         self.button_frame.pack(pady=10)
         self.analyze_button = tk.Button(self.button_frame, text="BLIP-2で解析", command=self.analyze_with_blip, bg="#2196F3", fg="white", font=("Yu Gothic UI", 12, "bold"), padx=20, pady=5)
         self.analyze_button.pack(side=tk.LEFT, padx=10)
-        self.write_button = tk.Button(self.button_frame, text="解析データを画像に保存", command=self.add_blip_caption_to_metadata, bg="#4CAF50", fg="white", font=("Yu Gothic UI", 12, "bold"), padx=20, pady=5)
+        self.write_button = tk.Button(self.button_frame, text="データを画像に保存", command=self.add_blip_caption_to_metadata, bg="#4CAF50", fg="white", font=("Yu Gothic UI", 11, "bold"), padx=20, pady=5)
         self.write_button.pack(side=tk.LEFT, padx=10)
-        self.save_metadata_button = tk.Button(self.button_frame, text="メタデータをCSVファイルに保存", command=self.save_metadata_to_csv, bg="#FF9800", fg="white", font=("Yu Gothic UI", 12, "bold"), padx=20, pady=5)
+        self.save_metadata_button = tk.Button(self.button_frame, text="データをCSVに保存", command=self.save_metadata_to_csv, bg="#FF9800", fg="white", font=("Yu Gothic UI", 11, "bold"), padx=20, pady=5)
         self.save_metadata_button.pack(side=tk.LEFT, padx=10)
-        self.discard_button = tk.Button(self.button_frame, text="編集内容を破棄", command=self.discard, bg="#f44336", fg="white", font=("Yu Gothic UI", 12, "bold"), padx=20, pady=5)
+        self.discard_button = tk.Button(self.button_frame, text="編集内容を破棄", command=self.discard, bg="#f44336", fg="white", font=("Yu Gothic UI", 11, "bold"), padx=20, pady=5)
         self.discard_button.pack(side=tk.LEFT, padx=10)
+        self.remove_personal_data_button = tk.Button(self.button_frame, text="情報を削除したコピーの作成", command=self.remove_personal_data, bg="#b00020", fg="white", font=("Yu Gothic UI", 11, "bold"), padx=20, pady=5)
+        self.remove_personal_data_button.pack(side=tk.LEFT, padx=10)
 
         # ステータスフレームの設定
         self.status_frame = tk.Frame(self, bg="#f0f0f0")
         self.status_frame.pack(fill=tk.X, padx=20, pady=5)
-        self.status_label = tk.Label(self.status_frame, text="", bg="#f0f0f0", font=("Yu Gothic UI", 12))
-        self.status_label.pack(side=tk.LEFT)
         self.progressbar = ttk.Progressbar(self.status_frame, orient="horizontal", mode="determinate")
+        self.status_label = tk.Label(self.status_frame, text="ファイルを選択してください", bg="#f0f0f0", font=("Yu Gothic UI", 13), wraplength=self.winfo_screenwidth() / 2- 110, anchor="w")
+        self.status_label.pack(side=tk.LEFT)
         self.progressbar.pack(side=tk.RIGHT, fill=tk.X)
 
     def open_file_path(self):
@@ -143,7 +149,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
             self.current_file_name = os.path.basename(file_path)
             self.current_file_path = file_path
             self.display_metadata(file_path)
-            self.update_status("画像ファイルを選択しました。BLIP-2で解析ボタンを押して分析を開始してください。")
+            self.update_status("画像ファイルの情報を表示しました。Blip-2での解析やメタデータを編集することが可能です。")
             self.current_file_path_text.config(text=self.current_file_path)
             self.open_file_path_button.config(state=tk.NORMAL)
 
@@ -169,7 +175,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         self.current_file_path = file_path
         if file_path.lower().endswith(('.png', '.webp')):
             self.display_metadata(file_path)
-            self.update_status("画像をドロップしました。BLIP-2で解析ボタンを押して分析を開始してください。")
+            self.update_status("画像ファイルの情報を表示しました。Blip-2での解析やメタデータを編集することが可能です。")
             self.current_file_path_text.config(text=self.current_file_path)
             self.open_file_path_button.config(state=tk.NORMAL)
         else:
@@ -299,6 +305,19 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
             self.blip2_result.insert(tk.END, self.original_caption)
 
         self.update_status("編集中のデータを破棄しました")
+
+    def remove_personal_data(self):
+        """画像から個人情報を削除したコピーを作成するメソッド"""
+        if self.current_file_path:
+            try:
+                # MetadataManagerクラスのremove_personal_dataメソッドを呼び出す
+                desktop_path, new_image_name = self.metadata_manager.remove_personal_data(self.current_file_path, self.current_file_name)
+
+                self.update_status(f"情報を削除したコピー{new_image_name}を{desktop_path}に作成しました", status_type="success")
+            except Exception as e:
+                self.update_status(f"エラー: コピーの作成に失敗しました: {str(e)}", status_type="error")
+        else:
+            self.update_status("エラー: 画像ファイルが選択されていません", status_type="error")
 
     def update_status(self, message, status_type="normal"):
         """ステータス表示を更新するメソッド"""
