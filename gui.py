@@ -1,3 +1,4 @@
+import configparser
 import tkinter as tk
 from tkinterdnd2 import DND_FILES, TkinterDnD
 import threading
@@ -13,11 +14,13 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
         # タスクバーの高さを取得
-        taskbar_height = 85
+        taskbar_height = 95
         self.geometry(f"{int(screen_width/2)}x{screen_height - taskbar_height}+0+0")
         self.title("Metadata Manager for SD webui Image")
         self.configure(bg="#f0f0f0")
         self.analyzer = analyzer
+        self.config_data = configparser.ConfigParser()
+        self.config_data.read('config.ini')
         self.create_widgets()
         self.metadata_manager = MetadataManager()
         # 画像のファイルパス及びファイル名
@@ -30,6 +33,24 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
 
     def create_widgets(self):
         """ウィジェットを定義し作成するメソッド"""
+
+        # メニューバーの設定
+        menubar = tk.Menu(self)
+        self.config(menu=menubar)
+
+        filemenu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="ファイル", menu=filemenu)
+        filemenu.add_command(label="開く", command=self.open_file_dialog)
+        filemenu.add_separator()
+        filemenu.add_command(label="終了", command=self.quit)
+
+        # 設定メニューを追加
+        settingsmenu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="設定", menu=settingsmenu)
+        settingsmenu.add_command(label="設定を開く", command=self.open_settings_window)
+        settingsmenu.add_command(label="ヘルプ")
+        settingsmenu.add_command(label="バージョン情報")
+        settingsmenu.add_command(label="ライセンス情報", command=self.license_info)
 
         # メインフレーム
         main_frame = tk.Frame(self, bg="#f0f0f0")
@@ -50,12 +71,14 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         # 処理中の画像のファイルパスの表示
         self.current_file_frame = tk.LabelFrame(main_frame, text="現在の画像", font=("Yu Gothic UI", 12), bg="#ffffff", relief="sunken", bd=1)
         self.current_file_frame.pack(pady=10, padx=20, fill=tk.X)
-        self.current_file_path_text = tk.Label(self.current_file_frame, text="画像が選択されていません", font=("Yu Gothic UI", 12), bg="lightgrey", wraplength=800)
+        self.current_file_frame.columnconfigure(0, weight=1)
+        self.current_file_path_text = tk.Label(self.current_file_frame, text="画像が選択されていません", font=("Yu Gothic UI", 12), bg="lightgrey", wraplength=700, anchor="w")
         self.current_file_path_text.grid(row=0, column=0, sticky=tk.EW, padx=5, pady=5)
-        
+
         # ファイルを開くボタン
         self.open_file_path_button = tk.Button(self.current_file_frame, text="画像を表示", command=self.open_file_path, font=("Yu Gothic UI", 12), padx=10, pady=5, state=tk.DISABLED)
         self.open_file_path_button.grid(row=0, column=1, sticky=tk.E, padx=5, pady=5)
+
 
         # メタデータ表示エリア
         self.metadata_frame = tk.LabelFrame(main_frame, text="メタデータ", font=("Yu Gothic UI", 12), bg="#ffffff", relief="sunken", bd=1)
@@ -285,8 +308,11 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
             edited_caption = self.blip2_result.get("1.0","end-1c")
 
             # MetadataManagerクラスのsave_metadata_to_csvメソッドを呼び出す
-            self.metadata_manager.save_metadata_to_csv(edited_prompt_text, edited_negative_prompt_text, self.current_file_name, edited_caption)
-            self.update_status(f"指定されたCSVファイルへの追記が完了しました", status_type="success")
+            result = self.metadata_manager.save_metadata_to_csv(edited_prompt_text, edited_negative_prompt_text, self.current_file_name, edited_caption)
+            if result:
+                self.update_status(f"指定されたCSVファイルへの追記が完了しました", status_type="success")
+            elif not result:
+                self.update_status("書き込み先が不明です。設定を確認してください", status_type="error")
         else:
             self.update_status("エラー: 保存するメタデータがありません", status_type="error")
 
@@ -328,3 +354,147 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
             "error": "red",
         }
         self.status_label.config(text=message, fg=status_colors.get(status_type, "black"))
+
+    def open_settings_window(self):
+        """設定画面を開く"""
+        self.settings_window = tk.Toplevel(self)
+        self.settings_window.title("設定")
+
+        # モーダルウィンドウに設定
+        self.settings_window.grab_set()
+        self.settings_window.focus_set()
+        self.settings_window.geometry("600x400")
+        self.settings_window.configure(bg="#f0f0f0")
+
+        # フレームを作成
+        frame = tk.Frame(self.settings_window, bg="#f0f0f0")
+        frame.pack(padx=20, pady=20)
+
+        # 設定項目
+        # csvファイルのパスの指定
+        csv_label = tk.Label(frame, text="CSVの保存先:", bg="#f0f0f0", font=("Yu Gothic UI", 14))
+        csv_label.grid(row=0, column=0, padx=5, pady=10, sticky=tk.W)
+        self.csv_file_path = tk.Label(frame, text=self.config_data.get("DEFAULT", "csv_path"), bg="#ffffff", font=("Yu Gothic UI", 14), relief="sunken", anchor="w")
+        self.csv_file_path.grid(row=0, column=1, padx=5, pady=10, sticky=tk.EW)
+        csv_button = tk.Button(frame, text="変更", command=self.select_csv_file, bg="#2196F3", fg="white", font=("Yu Gothic UI", 14, "bold"), width=10)
+        csv_button.grid(row=0, column=2, padx=5, pady=10)
+
+        # コピーの保存場所の設定
+        image_label = tk.Label(frame, text="画像の保存場所:", bg="#f0f0f0", font=("Yu Gothic UI", 14))
+        image_label.grid(row=1, column=0, padx=5, pady=10, sticky=tk.W)
+        self.image_save_path = tk.Label(frame, text=self.config_data.get("DEFAULT", "clone_save_path"), bg="#ffffff", font=("Yu Gothic UI", 14), relief="sunken", anchor="w")
+        self.image_save_path.grid(row=1, column=1, padx=5, pady=10, sticky=tk.EW)
+        image_button = tk.Button(frame, text="変更", command=self.select_image_save_path, bg="#2196F3", fg="white", font=("Yu Gothic UI", 14, "bold"), width=10)
+        image_button.grid(row=1, column=2, padx=5, pady=10)
+
+        # キャプションの追加位置の選択
+        position_label = tk.Label(frame, text="解析結果の追加位置:", bg="#f0f0f0", font=("Yu Gothic UI", 14))
+        position_label.grid(row=2, column=0, padx=5, pady=10, sticky=tk.W)
+        self.caption_position = tk.StringVar(frame, self.config_data.get("DEFAULT", "caption_position"))
+        position_option = tk.OptionMenu(frame, self.caption_position, "TOP", "BOTTOM")
+        position_option.config(bg="#ffffff", font=("Yu Gothic UI", 14))
+        position_option.grid(row=2, column=1, padx=5, pady=10, sticky=tk.EW)
+
+        # ボタンフレーム
+        button_frame = tk.Frame(self.settings_window, bg="#f0f0f0")
+        button_frame.pack(pady=20)
+
+        # OKボタン
+        ok_button = tk.Button(button_frame, text="設定を保存", command=self.save_settings, bg="#4CAF50", fg="white", font=("Yu Gothic UI", 14, "bold"), width=15)
+        ok_button.pack(side=tk.LEFT, padx=10)
+
+        # Cancelボタン
+        cancel_button = tk.Button(button_frame, text="キャンセル", command=self.settings_discard, bg="#f44336", fg="white", font=("Yu Gothic UI", 14, "bold"), width=15)
+        cancel_button.pack(side=tk.LEFT, padx=10)
+
+        # Configure grid weights
+        frame.grid_columnconfigure(1, weight=1)
+
+    def save_settings(self):
+        """設定値を保存する"""
+        # 設定値を取得
+        csv_path = self.csv_file_path.cget("text")
+        image_save_path = self.image_save_path.cget("text")
+        caption_position = self.caption_position.get().lower()
+
+
+        # 設定値を保存（configparserを使用）
+        self.config_data['DEFAULT'] = {
+            'csv_path': csv_path,
+            'clone_save_path': image_save_path,
+            'caption_position': caption_position,
+            
+        }
+        with open('config.ini', 'w') as configfile:
+            self.config_data.write(configfile)
+
+        # 設定画面を閉じる
+        self.settings_window.grab_release()
+        self.settings_window.destroy()
+        self.update_status("設定を保存しました")
+
+    def settings_discard(self):
+        """設定変更を破棄する"""
+        self.settings_window.grab_release()
+        self.settings_window.destroy()
+        self.update_status("設定の変更を破棄しました")
+
+    def select_csv_file(self):
+        """CSVファイルをファイラーで選択する"""
+        new_file_path = filedialog.askopenfilename(
+            initialdir="/",
+            title="CSVファイルを選択",
+            filetypes=(("CSV files", "*.csv"), ("all files", "*.*"))
+        )
+        if new_file_path:
+            # 選択されたファイルパスを表示
+            self.csv_file_path.config(text=new_file_path)
+    
+    def select_image_save_path(self):
+        """画像保存先をフォルダパスで選択する"""
+        new_folder_path = filedialog.askdirectory(
+            initialdir="/",
+            title="画像を保存するフォルダを選択"
+        )
+        if new_folder_path:
+            # 選択されたフォルダパスを表示
+            self.image_save_path.config(text=new_folder_path)
+    
+    def license_info(self):
+        """ライセンス情報を表示する"""
+        license_window = tk.Toplevel(self)
+        license_window.title("ライセンス情報")
+        license_window.geometry("600x400")
+        license_window.configure(bg="#f0f0f0")
+
+        license_text = tk.Text(license_window, wrap=tk.WORD, font=("Yu Gothic UI", 12), bg="#ffffff")
+        license_text.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
+
+        # ライセンス情報を表示
+        license_info = """
+        このソフトウェアは以下のライセンスの下で提供されています:
+
+        MIT License
+
+        Copyright (c) 2023 Your Name
+
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+        """
+        license_text.insert(tk.END, license_info)
+        license_text.config(state=tk.DISABLED)

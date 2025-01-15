@@ -7,8 +7,9 @@ import numpy as np
 import piexif
 import piexif.helper
 from PIL.PngImagePlugin import PngInfo
-from PIL import ExifTags, Image
+from PIL import Image
 import os
+import configparser
 
 class ImageAnalyzer:
     """画像を解析し、キャプションを生成するクラス"""
@@ -48,6 +49,10 @@ class ImageAnalyzer:
         
 class MetadataManager:
     """画像のメタデータを管理するクラス"""
+
+    def __init__(self):
+        self.config_data = configparser.ConfigParser()
+        self.config_data.read('config.ini')
     
     @staticmethod
     def update_image_metadata(file_path, metadata):
@@ -124,9 +129,21 @@ class MetadataManager:
     
     def add_blip_caption(self, positive_prompt, negative_prompt, others, caption):
         """BLIP-2のキャプションをプロンプトに追加するメソッド"""
+        # Config.iniからcaption_positionを読み込む
+        caption_position = self.config_data.get("DEFAULT", "caption_position", fallback="bottom")
 
-        # BLIP-2のキャプションをpositive_promptの直後に追加
-        positive_prompt += f", {caption}"
+        # positive_promptにcaptionを追加
+        if len(positive_prompt) == 0 and len(caption) == 0:
+            positive_prompt = ""
+        elif len(positive_prompt) == 0 and len(caption) > 0:
+            positive_prompt = caption.strip()
+        elif len(positive_prompt) > 0 and len(caption) == 0:
+            pass
+        else:  # len(positive_prompt) > 0 and len(caption) > 0
+            if caption_position == "top":
+                positive_prompt = f"{caption}, {positive_prompt}"
+            else:  # "bottom"の場合やその他の値の場合
+                positive_prompt += f", {caption}"
 
         # metadataの形を整形
         updated_prompt = f"{positive_prompt}\nNegative prompt: {negative_prompt}\n{others}"
@@ -135,10 +152,23 @@ class MetadataManager:
 
     def save_metadata_to_csv(self, positive_prompt, negative_prompt, file_name, current_caption):
         """メタデータをCSVファイルに保存するメソッド"""
-        output_file = "G:/マイドライブ/sd関連データ/styles.csv"
+        output_file = self.config_data.get("DEFAULT", "csv_path")
+        if not os.path.exists(output_file):
+            return False
+        
         with open(output_file, "a", newline='', encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow([f"<過去作>{file_name}", f"{positive_prompt}, {current_caption}", negative_prompt])
+            caption_position = self.config_data.get("DEFAULT", "caption_position")
+            
+            if len(current_caption) == 0:
+                writer.writerow([f"<過去作>{file_name}", positive_prompt, negative_prompt])
+            else:
+                if caption_position == "top":
+                    writer.writerow([f"<過去作>{file_name}", f"{current_caption}, {positive_prompt}", negative_prompt])              
+                elif caption_position == "bottom":
+                    writer.writerow([f"<過去作>{file_name}", f"{positive_prompt}, {current_caption}", negative_prompt])
+        
+        return True
 
     def remove_personal_data(self, file_path, original_file_name):
         """画像からメタデータを削除しデスクトップに保存するメソッド"""
@@ -149,10 +179,20 @@ class MetadataManager:
             img = Image.open(file_path)
             file_name, file_extension = os.path.splitext(original_file_name)
 
-            # 保存場所のパスを取得（デスクトップ）
-            desktop_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+            # 保存場所のパスを取得
+            save_path = self.config_data.get("DEFAULT", "clone_save_path", fallback=None)
+            # 保存場所が存在しない場合はデスクトップに設定し設定ファイルに書き込む
+            if not save_path:
+                save_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+                # 既存の設定を読み込み、保存用のパスをデスクトップに指定
+                self.config_data.read('config.ini')
+                self.config_data.set("DEFAULT", "clone_save_path", save_path)
+                # 設定を書き込む
+                with open('config.ini', 'w') as configfile:
+                    self.config_data.write(configfile)
+            
             new_image_name = f"{file_name}_cleaned{file_extension}"
-            output_path = os.path.join(desktop_path, new_image_name)
+            output_path = os.path.join(save_path, new_image_name)
 
             if img.format == "PNG":
                 # PNGのテキストチャンクを削除
@@ -160,7 +200,7 @@ class MetadataManager:
                 img_without_text.putdata(list(img.getdata()))
                 img_without_text.save(output_path, "PNG")
 
-                return desktop_path, new_image_name
+                return save_path, new_image_name
 
             elif img.format == "WEBP":
                 # WEBPのEXIFデータを削除
@@ -168,7 +208,7 @@ class MetadataManager:
                 img_without_exif.putdata(list(img.getdata()))
                 img_without_exif.save(output_path, "WEBP")
 
-                return desktop_path, new_image_name
+                return save_path, new_image_name
 
             else:
                 raise ValueError(f"このファイルの形式（{img.format}）はサポートされていません。")
