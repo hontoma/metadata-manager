@@ -1,0 +1,5 @@
+Metadata Manager for SD webui Image
+
+バージョン: 0.1.0 
+リリース日: 2025年1月15日
+©️2025 hontoma-tech. All rights reserved.

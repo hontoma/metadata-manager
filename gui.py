@@ -13,9 +13,9 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         super().__init__()
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
-        # タスクバーの高さを取得
         taskbar_height = 95
-        self.geometry(f"{int(screen_width/2)}x{screen_height - taskbar_height}+0+0")
+        self.dafault_window_size = f"{int(screen_width/2)}x{screen_height - taskbar_height}+0+0"
+        self.geometry(self.dafault_window_size)
         self.title("Metadata Manager for SD webui Image")
         self.configure(bg="#f0f0f0")
         self.analyzer = analyzer
@@ -48,8 +48,8 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         settingsmenu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="設定", menu=settingsmenu)
         settingsmenu.add_command(label="設定を開く", command=self.open_settings_window)
-        settingsmenu.add_command(label="ヘルプ")
-        settingsmenu.add_command(label="バージョン情報")
+        settingsmenu.add_command(label="ヘルプ", command=self.show_help)
+        settingsmenu.add_command(label="バージョン情報", command=self.show_version_info)
         settingsmenu.add_command(label="ライセンス情報", command=self.license_info)
 
         # メインフレーム
@@ -164,7 +164,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
 
         file_path = filedialog.askopenfilename(
             defaultextension=".png",
-            filetypes=[("PNG files", "*.png"), ("WEBP files", "*.webp")],
+            filetypes=[("画像ファイル", "*.png *.webp"), ("すべてのファイル", "*.*")],
             initialdir="./",  # 初期ディレクトリを指定
             title="画像ファイルを選択"
         )
@@ -357,17 +357,29 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
 
     def open_settings_window(self):
         """設定画面を開く"""
+        self.config_data.read("config.ini")
+
         self.settings_window = tk.Toplevel(self)
         self.settings_window.title("設定")
 
         # モーダルウィンドウに設定
         self.settings_window.grab_set()
         self.settings_window.focus_set()
-        self.settings_window.geometry("600x400")
+        self.settings_window.geometry(self.dafault_window_size)
         self.settings_window.configure(bg="#f0f0f0")
 
+        # キャンバスとスクロールバーを作成
+        canvas = tk.Canvas(self.settings_window, bg="#f0f0f0")
+        scrollbar = tk.Scrollbar(self.settings_window, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg="#f0f0f0")
+
+        scrollable_frame.bind("<Configure>",lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
         # フレームを作成
-        frame = tk.Frame(self.settings_window, bg="#f0f0f0")
+        frame = tk.Frame(scrollable_frame, bg="#f0f0f0")
         frame.pack(padx=20, pady=20)
 
         # 設定項目
@@ -395,8 +407,22 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         position_option.config(bg="#ffffff", font=("Yu Gothic UI", 14))
         position_option.grid(row=2, column=1, padx=5, pady=10, sticky=tk.EW)
 
+        # csvファイル保存時にファイル名をキャプションで置き換えるかの設定
+        replace_label = tk.Label(frame, text="CSV保存時にタイトルを解析結果に置き換え:", bg="#f0f0f0", font=("Yu Gothic UI", 14), wraplength=150)
+        replace_label.grid(row=3, column=0, padx=5, pady=10, sticky=tk.W)
+        self.replace_caption = tk.BooleanVar(frame, self.config_data.getboolean("DEFAULT", "replace_caption"))
+        replace_checkbutton = tk.Checkbutton(frame, variable=self.replace_caption, bg="#ffffff", font=("Yu Gothic UI", 14))
+        replace_checkbutton.grid(row=3, column=1, padx=5, pady=10)
+
+        # csvのタイトルに付けるprefixの設定
+        prefix_label = tk.Label(frame, text="CSV保存時のタイトルの接頭辞:", bg="#f0f0f0", font=("Yu Gothic UI", 14), wraplength=150)
+        prefix_label.grid(row=4, column=0, padx=5, pady=10, sticky=tk.W)
+        self.prefix_word = tk.StringVar(frame, self.config_data.get("DEFAULT", "csv_title_prefix"))
+        self.prefix = tk.Entry(frame, width=30, font=("Yu Gothic UI", 14), textvariable=self.prefix_word)
+        self.prefix.grid(row=4, column=1, padx=5, pady=10, sticky=tk.EW)
+
         # ボタンフレーム
-        button_frame = tk.Frame(self.settings_window, bg="#f0f0f0")
+        button_frame = tk.Frame(scrollable_frame, bg="#f0f0f0")
         button_frame.pack(pady=20)
 
         # OKボタン
@@ -407,6 +433,10 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         cancel_button = tk.Button(button_frame, text="キャンセル", command=self.settings_discard, bg="#f44336", fg="white", font=("Yu Gothic UI", 14, "bold"), width=15)
         cancel_button.pack(side=tk.LEFT, padx=10)
 
+        # キャンバスとスクロールバーを配置
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
         # Configure grid weights
         frame.grid_columnconfigure(1, weight=1)
 
@@ -415,7 +445,9 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         # 設定値を取得
         csv_path = self.csv_file_path.cget("text")
         image_save_path = self.image_save_path.cget("text")
-        caption_position = self.caption_position.get().lower()
+        caption_position = self.caption_position.get()
+        replace_caption = self.replace_caption.get()
+        csv_title_prefix = self.prefix.get()
 
 
         # 設定値を保存（configparserを使用）
@@ -423,6 +455,8 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
             'csv_path': csv_path,
             'clone_save_path': image_save_path,
             'caption_position': caption_position,
+            'replace_caption': str(replace_caption).lower(),
+            'csv_title_prefix': csv_title_prefix,
             
         }
         with open('config.ini', 'w') as configfile:
@@ -461,40 +495,63 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
             self.image_save_path.config(text=new_folder_path)
     
     def license_info(self):
-        """ライセンス情報を表示する"""
+        """ライセンス情報を表示するメソッド"""
         license_window = tk.Toplevel(self)
         license_window.title("ライセンス情報")
         license_window.geometry("600x400")
-        license_window.configure(bg="#f0f0f0")
 
-        license_text = tk.Text(license_window, wrap=tk.WORD, font=("Yu Gothic UI", 12), bg="#ffffff")
-        license_text.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
+        # スクロール可能なテキストウィジェットを作成
+        license_text = tk.Text(license_window, wrap=tk.WORD, padx=10, pady=10)
+        license_text.pack(expand=True, fill=tk.BOTH)
 
-        # ライセンス情報を表示
-        license_info = """
-        このソフトウェアは以下のライセンスの下で提供されています:
+        # スクロールバーを追加
+        scrollbar = tk.Scrollbar(license_text)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        license_text.config(yscrollcommand=scrollbar.set)
+        scrollbar.config(command=license_text.yview)
 
-        MIT License
+        try:
+            # licenses.txtファイルからライセンス情報を読み込む
+            with open('licenses.txt', 'r', encoding='utf-8') as file:
+                license_content = file.read()
+            
+            # ライセンス情報をテキストウィジェットに挿入
+            license_text.insert(tk.END, license_content)
+        except FileNotFoundError:
+            license_text.insert(tk.END, "ライセンス情報ファイルが見つかりません。")
+        except Exception as e:
+            license_text.insert(tk.END, f"ライセンス情報の読み込み中にエラーが発生しました: {str(e)}")
 
-        Copyright (c) 2023 Your Name
-
-        Permission is hereby granted, free of charge, to any person obtaining a copy
-        of this software and associated documentation files (the "Software"), to deal
-        in the Software without restriction, including without limitation the rights
-        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-        copies of the Software, and to permit persons to whom the Software is
-        furnished to do so, subject to the following conditions:
-
-        The above copyright notice and this permission notice shall be included in all
-        copies or substantial portions of the Software.
-
-        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-        SOFTWARE.
-        """
-        license_text.insert(tk.END, license_info)
+        # テキストウィジェットを読み取り専用に設定
         license_text.config(state=tk.DISABLED)
+
+    def show_help(self):
+        """ヘルプ情報を表示するメソッド"""
+        with open('help.txt', 'r', encoding='utf-8') as file:
+            help_text = file.read()
+        
+        help_window = tk.Toplevel(self)
+        help_window.title("ヘルプ")
+        help_window.geometry("600x400")
+        
+        text_widget = tk.Text(help_window, wrap=tk.WORD, font=("Yu Gothic UI", 10))
+        text_widget.pack(expand=True, fill=tk.BOTH, padx=10, pady=10)
+        
+        text_widget.insert(tk.END, help_text)
+        text_widget.config(state=tk.DISABLED)  # 読み取り専用に設定
+        
+        scrollbar = tk.Scrollbar(text_widget)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        text_widget.config(yscrollcommand=scrollbar.set)
+        scrollbar.config(command=text_widget.yview)
+
+    def show_version_info(self):
+        """バージョン情報を表示するメソッド"""
+        try:
+            with open('version.txt', 'r', encoding="utf-8") as file:
+                description = file.read().strip()
+            messagebox.showinfo("バージョン情報", description)
+        except FileNotFoundError:
+            messagebox.showerror("エラー", "version.txt ファイルが見つかりません。")
+        except Exception as e:
+            messagebox.showerror("エラー", f"バージョン情報の読み込み中にエラーが発生しました: {str(e)}")

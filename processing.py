@@ -27,6 +27,7 @@ class ImageAnalyzer:
                 torch_dtype=torch.float16,
                 low_cpu_mem_usage=True
             )
+
     
     def preprocess_image(self, image_path):
         """画像を前処理するメソッド"""
@@ -122,14 +123,15 @@ class MetadataManager:
 
         #ポジティブプロンプトのみでネガティブ、その他も空の場合にはプロンプトを空と見なし、その他に集約する。
         if not negative_prompt and not others:
-            others = positive_prompt
-            positive_prompt.clear
+            others = positive_prompt.copy()
+            positive_prompt.clear()
 
         return " ".join(positive_prompt).strip(), " ".join(negative_prompt).strip(), " ".join(others).strip()
     
     def add_blip_caption(self, positive_prompt, negative_prompt, others, caption):
         """BLIP-2のキャプションをプロンプトに追加するメソッド"""
         # Config.iniからcaption_positionを読み込む
+        self.config_data.read('config.ini')
         caption_position = self.config_data.get("DEFAULT", "caption_position", fallback="bottom")
 
         # positive_promptにcaptionを追加
@@ -140,7 +142,7 @@ class MetadataManager:
         elif len(positive_prompt) > 0 and len(caption) == 0:
             pass
         else:  # len(positive_prompt) > 0 and len(caption) > 0
-            if caption_position == "top":
+            if caption_position == "TOP":
                 positive_prompt = f"{caption}, {positive_prompt}"
             else:  # "bottom"の場合やその他の値の場合
                 positive_prompt += f", {caption}"
@@ -152,6 +154,7 @@ class MetadataManager:
 
     def save_metadata_to_csv(self, positive_prompt, negative_prompt, file_name, current_caption):
         """メタデータをCSVファイルに保存するメソッド"""
+        self.config_data.read('config.ini')
         output_file = self.config_data.get("DEFAULT", "csv_path")
         if not os.path.exists(output_file):
             return False
@@ -159,14 +162,22 @@ class MetadataManager:
         with open(output_file, "a", newline='', encoding="utf-8") as f:
             writer = csv.writer(f)
             caption_position = self.config_data.get("DEFAULT", "caption_position")
+            is_replace_title = self.config_data.getboolean("DEFAULT", "replace_caption")
+            title_prefix = self.config_data.get("DEFAULT", "csv_title_prefix", fallback="")
             
             if len(current_caption) == 0:
-                writer.writerow([f"<過去作>{file_name}", positive_prompt, negative_prompt])
+                writer.writerow([f"{title_prefix}{file_name}", positive_prompt, negative_prompt])
             else:
-                if caption_position == "top":
-                    writer.writerow([f"<過去作>{file_name}", f"{current_caption}, {positive_prompt}", negative_prompt])              
-                elif caption_position == "bottom":
-                    writer.writerow([f"<過去作>{file_name}", f"{positive_prompt}, {current_caption}", negative_prompt])
+                if caption_position == "TOP":
+                    if is_replace_title:
+                        writer.writerow([f"{title_prefix}{current_caption}", f"{current_caption}, {positive_prompt}", negative_prompt])
+                    else:
+                        writer.writerow([f"{title_prefix}{file_name}", f"{current_caption}, {positive_prompt}", negative_prompt])              
+                elif caption_position == "BOTTOM":
+                    if is_replace_title:
+                        writer.writerow([f"{title_prefix}{current_caption}", f"{positive_prompt}, {current_caption}", negative_prompt])
+                    else:
+                        writer.writerow([f"{title_prefix}{file_name}", f"{positive_prompt}, {current_caption}", negative_prompt])
         
         return True
 
@@ -180,6 +191,7 @@ class MetadataManager:
             file_name, file_extension = os.path.splitext(original_file_name)
 
             # 保存場所のパスを取得
+            self.config_data.read('config.ini')
             save_path = self.config_data.get("DEFAULT", "clone_save_path", fallback=None)
             # 保存場所が存在しない場合はデスクトップに設定し設定ファイルに書き込む
             if not save_path:
