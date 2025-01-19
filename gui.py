@@ -11,14 +11,15 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
     """画像解析アプリケーションのGUIを作成するクラス"""
     def __init__(self, analyzer):
         super().__init__()
+        self.analyzer = analyzer
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
         taskbar_height = 95
         self.dafault_window_size = f"{int(screen_width/2)}x{screen_height - taskbar_height}+0+0"
         self.geometry(self.dafault_window_size)
-        self.title("Metadata Manager for SD webui Image")
+        version_name = "Light version" if self.analyzer is None else "Full version"
+        self.title(f"Metadata Manager for SD webui Image {version_name}")
         self.configure(bg="#f0f0f0")
-        self.analyzer = analyzer
         self.config_data = configparser.ConfigParser()
         self.config_data.read('config.ini')
         self.create_widgets()
@@ -106,28 +107,31 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         self.negative_prompt_text.config(yscrollcommand=self.negative_prompt_text_scrollbar.set)
 
         # その他の情報エリア
-        self.others_text_label = tk.Label(self.metadata_frame, text="その他の情報", font=("Yu Gothic UI", 12), bg="#ffffff")
-        self.others_text_label.grid(row=4, column=0, sticky=tk.EW, padx=5, pady=5)
-        self.others_text = tk.Text(self.metadata_frame, state=tk.DISABLED, height=5, font=("Yu Gothic UI", 10), wrap=tk.WORD, bg="lightgrey")
-        self.others_text.grid(row=5, column=0, columnspan=2, sticky=tk.NSEW, padx=5, pady=5)
-        self.others_text_scrollbar = tk.Scrollbar(self.metadata_frame, command=self.others_text.yview)
-        self.others_text_scrollbar.grid(row=5, column=2, sticky=tk.NS)
-        self.others_text.config(yscrollcommand=self.others_text_scrollbar.set)
+        self.extra_info_label = tk.Label(self.metadata_frame, text="その他の情報", font=("Yu Gothic UI", 12), bg="#ffffff")
+        self.extra_info_label.grid(row=4, column=0, sticky=tk.EW, padx=5, pady=5)
+        self.extra_info = tk.Text(self.metadata_frame, state=tk.DISABLED, height=5, font=("Yu Gothic UI", 10), wrap=tk.WORD, bg="lightgrey")
+        self.extra_info.grid(row=5, column=0, columnspan=2, sticky=tk.NSEW, padx=5, pady=5)
+        self.extra_info_scrollbar = tk.Scrollbar(self.metadata_frame, command=self.extra_info.yview)
+        self.extra_info_scrollbar.grid(row=5, column=2, sticky=tk.NS)
+        self.extra_info.config(yscrollcommand=self.extra_info_scrollbar.set)
 
-        # BLIP-2解析データ表示エリア
-        self.result_frame = tk.LabelFrame(main_frame, text="BLIP-2解析結果（編集可）", font=("Yu Gothic UI", 12), bg="#ffffff", relief="sunken", bd=1)
+        # BLIP-2解析データ・もしくは追加テキスト表示及び編集エリア
+        # self.analyzerがNoneの場合には「追加テキスト」とラベル名を変更
+        label_name = "追加テキスト" if self.analyzer is None else "BLIP-2解析データ"
+        self.result_frame = tk.LabelFrame(main_frame, text=f"{label_name}（編集可）", font=("Yu Gothic UI", 12), bg="#ffffff", relief="sunken", bd=1)
         self.result_frame.pack(pady=10, padx=20, fill=tk.BOTH, expand=True)
-        self.blip2_result = tk.Text(self.result_frame, height=2, width=80, font=("Yu Gothic UI", 11), wrap=tk.WORD)
-        self.blip2_result.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5, pady=5)
-        self.scrollbar = tk.Scrollbar(self.result_frame, command=self.blip2_result.yview)
+        self.additional_text = tk.Text(self.result_frame, height=2, width=80, font=("Yu Gothic UI", 11), wrap=tk.WORD)
+        self.additional_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5, pady=5)
+        self.scrollbar = tk.Scrollbar(self.result_frame, command=self.additional_text.yview)
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.blip2_result.config(yscrollcommand=self.scrollbar.set)
+        self.additional_text.config(yscrollcommand=self.scrollbar.set)
 
         # ボタンフレームの設定
         self.button_frame = tk.Frame(main_frame, bg="#f0f0f0")
         self.button_frame.pack(pady=10)
-        self.analyze_button = tk.Button(self.button_frame, text="BLIP-2で解析", command=self.analyze_with_blip, bg="#2196F3", fg="white", font=("Yu Gothic UI", 12, "bold"), padx=20, pady=5)
-        self.analyze_button.pack(side=tk.LEFT, padx=10)
+        if self.analyzer is not None:
+            self.analyze_button = tk.Button(self.button_frame, text="BLIP-2で解析", command=self.analyze_with_blip, bg="#2196F3", fg="white", font=("Yu Gothic UI", 12, "bold"), padx=20, pady=5)
+            self.analyze_button.pack(side=tk.LEFT, padx=10)
         self.write_button = tk.Button(self.button_frame, text="データを画像に保存", command=self.add_blip_caption_to_metadata, bg="#4CAF50", fg="white", font=("Yu Gothic UI", 11, "bold"), padx=20, pady=5)
         self.write_button.pack(side=tk.LEFT, padx=10)
         self.save_metadata_button = tk.Button(self.button_frame, text="データをCSVに保存", command=self.save_metadata_to_csv, bg="#FF9800", fg="white", font=("Yu Gothic UI", 11, "bold"), padx=20, pady=5)
@@ -208,12 +212,17 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
 
     def analyze_with_blip(self):
         """BLIP-2で画像を解析するメソッド"""
+
+        # self.analyzerがNoneの場合のエラー表示（無い場合はメソッド自体を使用しないが念の為）
+        if self.analyzer is None:
+            self.update_status("ライト版のためAI解析は利用できません", status_type="error")
+
         if self.is_analyzing:
             messagebox.showwarning("警告", "現在、画像の解析中のため実行できません。")
             return
 
         # 解析前にresult textを初期化
-        self.blip2_result.delete(1.0, tk.END)
+        self.additional_text.delete(1.0, tk.END)
 
         if self.current_file_path:
             # 解析中フラグを設定し、ボタンをDISABLEDにする
@@ -234,11 +243,16 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
 
     def run_blip_analysis(self):
         """BLIP-2のロードと解析を行うメソッド"""
+
+        # ライト版の場合の処理の無効化（念の為）
+        if self.analyzer is None:
+            return
+
         self.analyzer.load_model()  # メインスレッドをブロックしないように、別スレッドでロード
         self.update_status("画像を分析中...", status_type="processing")
 
         result = self.analyzer.analyze_image(self.current_file_path)
-        self.blip2_result.insert(tk.END, result)
+        self.additional_text.insert(tk.END, result)
         self.original_caption = result
         self.update_status("BLIP-2による画像分析が完了しました", status_type="success")
         self.progressbar.stop()
@@ -263,19 +277,19 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
             self.negative_prompt_text.delete(1.0, tk.END)
             self.negative_prompt_text.insert(tk.END, negative_prompt)
 
-            self.others_text.config(state=tk.NORMAL)
-            self.others_text.delete(1.0, tk.END)
-            self.others_text.insert(tk.END, others)
-            self.others_text.config(state=tk.DISABLED)
+            self.extra_info.config(state=tk.NORMAL)
+            self.extra_info.delete(1.0, tk.END)
+            self.extra_info.insert(tk.END, others)
+            self.extra_info.config(state=tk.DISABLED)
 
-            self.blip2_result.delete(1.0, tk.END)
+            self.additional_text.delete(1.0, tk.END)
 
             self.original_prompt = positive_prompt
             self.original_negative_prompt = negative_prompt
             self.update_status("メタデータを読み込みに成功しました",status_type="success")
         except Exception as e:
             self.prompt_text.insert(tk.END, f"\n\nメタデータの読み込みに失敗しました: {str(e)}")
-            self.original_prompt,self.original_negative_prompt, self.others_text = None
+            self.original_prompt,self.original_negative_prompt, self.extra_info = None
             self.update_status("エラー: メタデータの読み込みに失敗しました", status_type="error")
 
     def add_blip_caption_to_metadata(self):
@@ -285,8 +299,8 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
                 # 編集したメタデータの取得
                 edited_prompt_text = self.prompt_text.get("1.0","end-1c")
                 edited_negative_prompt_text = self.negative_prompt_text.get("1.0","end-1c")
-                others_text= self.others_text.get("1.0","end-1c")
-                edited_caption = self.blip2_result.get("1.0","end-1c")
+                others_text= self.extra_info.get("1.0","end-1c")
+                edited_caption = self.additional_text.get("1.0","end-1c")
 
                 # MetadataManagerクラスのadd_blip_captionメソッドを呼び出す
                 metadata = self.metadata_manager.add_blip_caption(edited_prompt_text, edited_negative_prompt_text, others_text, edited_caption)
@@ -305,7 +319,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
             # 編集したメタデータの取得
             edited_prompt_text = self.prompt_text.get("1.0","end-1c")
             edited_negative_prompt_text = self.negative_prompt_text.get("1.0","end-1c")
-            edited_caption = self.blip2_result.get("1.0","end-1c")
+            edited_caption = self.additional_text.get("1.0","end-1c")
 
             # MetadataManagerクラスのsave_metadata_to_csvメソッドを呼び出す
             result = self.metadata_manager.save_metadata_to_csv(edited_prompt_text, edited_negative_prompt_text, self.current_file_name, edited_caption)
@@ -326,9 +340,9 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         if self.original_negative_prompt:
             self.negative_prompt_text.insert(tk.END, self.original_negative_prompt)
 
-        self.blip2_result.delete(1.0, tk.END)
+        self.additional_text.delete(1.0, tk.END)
         if self.original_caption:
-            self.blip2_result.insert(tk.END, self.original_caption)
+            self.additional_text.insert(tk.END, self.original_caption)
 
         self.update_status("編集中のデータを破棄しました")
 

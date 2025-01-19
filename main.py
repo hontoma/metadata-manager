@@ -1,7 +1,13 @@
 from gui import ImageAnalyzerApp
-from processing import ImageAnalyzer
 
 if __name__ == "__main__":
-    analyzer = ImageAnalyzer()
+    # image_analyzer.pyが存在する場合はインポート
+    try:
+        from image_analyzer import ImageAnalyzer
+        analyzer = ImageAnalyzer()
+
+    # 存在しない場合はスキップ
+    except ImportError:
+        analyzer = None
     app = ImageAnalyzerApp(analyzer)
     app.mainloop()
