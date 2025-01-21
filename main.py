@@ -1,4 +1,4 @@
-from gui import ImageAnalyzerApp
+from metadata_manager.gui import ImageAnalyzerApp
 
 if __name__ == "__main__":
     # image_analyzer.pyが存在する場合はインポート
