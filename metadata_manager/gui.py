@@ -3,9 +3,12 @@ import tkinter as tk
 from tkinterdnd2 import DND_FILES, TkinterDnD
 import threading
 import os
-from processing import MetadataManager
+from .processing import MetadataManager
 from tkinter import messagebox, filedialog
 from tkinter import ttk
+# リソースファイルの読み込み
+from resources import get_resource_content
+from metadata_manager.config import CONFIG_FILE
 
 class ImageAnalyzerApp(TkinterDnD.Tk):
     """画像解析アプリケーションのGUIを作成するクラス"""
@@ -21,7 +24,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         self.title(f"Metadata Manager for SD webui Image {version_name}")
         self.configure(bg="#f0f0f0")
         self.config_data = configparser.ConfigParser()
-        self.config_data.read('config.ini')
+        self.config_data.read(CONFIG_FILE)
         self.create_widgets()
         self.metadata_manager = MetadataManager()
         # 画像のファイルパス及びファイル名
@@ -371,7 +374,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
 
     def open_settings_window(self):
         """設定画面を開く"""
-        self.config_data.read("config.ini")
+        self.config_data.read(CONFIG_FILE)
 
         self.settings_window = tk.Toplevel(self)
         self.settings_window.title("設定")
@@ -473,7 +476,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
             'csv_title_prefix': csv_title_prefix,
             
         }
-        with open('config.ini', 'w') as configfile:
+        with open(CONFIG_FILE, 'w') as configfile:
             self.config_data.write(configfile)
 
         # 設定画面を閉じる
@@ -526,8 +529,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
 
         try:
             # licenses.txtファイルからライセンス情報を読み込む
-            with open('licenses.txt', 'r', encoding='utf-8') as file:
-                license_content = file.read()
+            license_content = get_resource_content('licenses.txt')
             
             # ライセンス情報をテキストウィジェットに挿入
             license_text.insert(tk.END, license_content)
@@ -541,8 +543,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
 
     def show_help(self):
         """ヘルプ情報を表示するメソッド"""
-        with open('help.txt', 'r', encoding='utf-8') as file:
-            help_text = file.read()
+        help_text = get_resource_content('help.txt')
         
         help_window = tk.Toplevel(self)
         help_window.title("ヘルプ")
@@ -562,8 +563,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
     def show_version_info(self):
         """バージョン情報を表示するメソッド"""
         try:
-            with open('version.txt', 'r', encoding="utf-8") as file:
-                description = file.read().strip()
+            description = get_resource_content('version.txt')
             messagebox.showinfo("バージョン情報", description)
         except FileNotFoundError:
             messagebox.showerror("エラー", "version.txt ファイルが見つかりません。")

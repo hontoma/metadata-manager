@@ -6,13 +6,20 @@ from PIL.PngImagePlugin import PngInfo
 from PIL import Image
 import os
 import configparser
+
+# configファイルの読み込み
+from metadata_manager.config import CONFIG_FILE
         
 class MetadataManager:
     """画像のメタデータを管理するクラス"""
 
     def __init__(self):
         self.config_data = configparser.ConfigParser()
-        self.config_data.read('config.ini')
+        self.reload_config()
+    
+    def reload_config(self):
+        """config.iniを読み込むメソッド"""
+        self.config_data.read(CONFIG_FILE)
     
     @staticmethod
     def update_image_metadata(file_path, metadata):
@@ -90,7 +97,7 @@ class MetadataManager:
     def add_blip_caption(self, positive_prompt, negative_prompt, others, caption):
         """BLIP-2のキャプション（ライト版は任意のテキスト）をプロンプトに追加するメソッド"""
         # Config.iniからcaption_positionを読み込む
-        self.config_data.read('config.ini')
+        self.reload_config()
         caption_position = self.config_data.get("DEFAULT", "caption_position", fallback="bottom")
 
         # positive_promptにcaptionを追加
@@ -113,7 +120,7 @@ class MetadataManager:
 
     def save_metadata_to_csv(self, positive_prompt, negative_prompt, file_name, current_caption):
         """メタデータをCSVファイルに保存するメソッド"""
-        self.config_data.read('config.ini')
+        self.reload_config()
         output_file = self.config_data.get("DEFAULT", "csv_path")
         if not os.path.exists(output_file):
             return False
@@ -150,16 +157,16 @@ class MetadataManager:
             file_name, file_extension = os.path.splitext(original_file_name)
 
             # 保存場所のパスを取得
-            self.config_data.read('config.ini')
+            self.reload_config()
             save_path = self.config_data.get("DEFAULT", "clone_save_path", fallback=None)
             # 保存場所が存在しない場合はデスクトップに設定し設定ファイルに書き込む
             if not save_path:
                 save_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
                 # 既存の設定を読み込み、保存用のパスをデスクトップに指定
-                self.config_data.read('config.ini')
+                self.reload_config()
                 self.config_data.set("DEFAULT", "clone_save_path", save_path)
                 # 設定を書き込む
-                with open('config.ini', 'w') as configfile:
+                with open(CONFIG_FILE, 'w') as configfile:
                     self.config_data.write(configfile)
             
             new_image_name = f"{file_name}_cleaned{file_extension}"
