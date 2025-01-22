@@ -47,7 +47,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='main',
+    name='MetadataManager-ver0.1.0',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
