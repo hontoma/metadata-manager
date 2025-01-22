@@ -1,4 +1,20 @@
-このアプリケーションはPython 3.11 を使用しており、Python Software Foundation License (PSF)の下で配布されているPythonの標準ライブラリの一部のモジュールを使用しています。
+このプロジェクト（Metadata Manager for SD webui Image Light version）は MIT ライセンスの下で公開されています。
+
+MIT License
+
+Copyright (c) [2025] [hontoma]
+
+以下に定める条件に従い、本ソフトウェアおよび関連文書のファイル（以下「ソフトウェア」）の複製を取得するすべての人に対し、ソフトウェアを無制限に扱うことを無償で許可します。これには、ソフトウェアの複製を使用、複写、変更、結合、掲載、頒布、サブライセンス、および/または販売する権利、およびソフトウェアを提供する相手に同じことを許可する権利も無制限に含まれます。
+
+上記の著作権表示および本許諾表示を、ソフトウェアのすべての複製または重要な部分に記載するものとします。
+
+ソフトウェアは「現状のまま」で、明示であるか暗黙であるかを問わず、何らの保証もなく提供されます。ここでいう保証とは、商品性、特定の目的への適合性、および権利非侵害についての保証も含みますが、それに限定されるものではありません。 作者または著作権者は、契約行為、不法行為、またはそれ以外であろうと、ソフトウェアに起因または関連し、あるいはソフトウェアの使用またはその他の扱いによって生じる一切の請求、損害、その他の義務について何らの責任も負わないものとします。
+
+注意: このソフトウェアは無料で提供されており、販売を目的とした使用は意図されていません。
+ソフトウェアの再配布は許可されますが、無料で提供されることを条件とします。
+--------------------------------------------------------------------------------
+
+---このアプリケーションはPython 3.11 を使用しており、Python Software Foundation License (PSF)の下で配布されているPythonの標準ライブラリの一部のモジュールを使用しています。
 
 以下は、使用している主要な外部ライブラリとそのライセンスです：
 PIL (Python Imaging Library / Pillow):
@@ -13,59 +29,14 @@ tkinterdnd2:
 ライセンス: BSD 3-Clause License
 ウェブサイト: https://github.com/pmgagne/tkinterdnd2
 
-transformers:
-ライセンス: Apache License 2.0
-ウェブサイト: https://huggingface.co/transformers/
-
-torch:
-ライセンス: BSD 3-Clause License
-ウェブサイト: https://pytorch.org/
-
-numpy:
-ライセンス: BSD 3-Clause License
-ウェブサイト: https://numpy.org/
-
-opencv-python:
-ライセンス: MIT License
-ウェブサイト: https://github.com/opencv/opencv-python
-
 configparser:
 ライセンス: MIT License
 ウェブサイト: https://docs.python.org/3/library/configparser.html
-
-pandas:
-ライセンス: BSD 3-Clause License
-ウェブサイト: https://pandas.pydata.org/
 
 piexif:
 ライセンス: MIT License
 ウェブサイト: https://github.com/hMatoba/Piexif
 
-requests:
-ライセンス: Apache License 2.0
-ウェブサイト: https://requests.readthedocs.io/
-
-tqdm:
-ライセンス: MIT License, Mozilla Public License 2.0 (MPL 2.0) (デュアルライセンス)
-ウェブサイト: https://github.com/tqdm/tqdm
-
-BLIP-2 (Bootstrapping Language-Image Pre-training):
-ライセンス: BSD 3-Clause License
-ウェブサイト: https://github.com/salesforce/LAVIS/tree/main/projects/blip2
-
-Salesforce/blip2-opt-2.7b:
-ライセンス: BSD 3-Clause License
-ウェブサイト: https://huggingface.co/Salesforce/blip2-opt-2.7b
-
-BLIP-2とSalesforce/blip2-opt-2.7bモデルは、Salesforce, Inc.によって開発され、BSD 3-Clause Licenseの下で公開されています。このライセンスは、ソフトウェアの使用、複製、変更、配布を許可していますが、以下の条件を満たす必要があります：
-
-1. ソースコードの再配布には、上記の著作権表示、この条件のリスト、および以下の免責事項を含める必要があります。
-2. バイナリ形式での再配布では、配布物に付属のドキュメントおよび/またはその他の資料に、上記の著作権表示、この条件のリスト、および以下の免責事項を含める必要があります。
-3. Salesforceの名前、またはその貢献者の名前を、書面による事前の許可なしに、このソフトウェアから派生した製品を推奨または宣伝するために使用することはできません。
-
-このソフトウェアは著作権所有者および貢献者によって「現状のまま」提供され、商品性および特定目的への適合性についての暗黙の保証を含め、明示または黙示を問わず、いかなる保証も行いません。著作権所有者または貢献者は、契約行為、不法行為、またはそれ以外にかかわらず、ソフトウェアの使用その他の取引に起因または関連して生じた、いかなる直接的、間接的、偶発的、特別、例示的、または結果的損害（代替品またはサービスの調達、使用、データ、または利益の損失、または事業中断を含む）に対しても、たとえそのような損害の可能性について助言を受けていたとしても、一切の責任を負いません。
-
-このアプリケーションはBLIP-2およびSalesforce/blip2-opt-2.7bモデルを使用しており、上記のライセンス条項に従って配布されています。
 
 各ライブラリの詳細なライセンス条項については、それぞれの公式ウェブサイトやGitHubリポジトリを参照してください。
 

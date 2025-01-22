@@ -5,17 +5,15 @@ import piexif.helper
 from PIL.PngImagePlugin import PngInfo
 from PIL import Image
 import os
-import configparser
 
 # configファイルの読み込み
-from metadata_manager.config import CONFIG_FILE
+from metadata_manager.config import get_config, CONFIG_FILE
         
 class MetadataManager:
     """画像のメタデータを管理するクラス"""
 
     def __init__(self):
-        self.config_data = configparser.ConfigParser()
-        self.reload_config()
+        self.config_data = get_config()
     
     def reload_config(self):
         """config.iniを読み込むメソッド"""
