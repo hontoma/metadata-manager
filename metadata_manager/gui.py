@@ -427,7 +427,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         # csvファイル保存時にファイル名をキャプションで置き換えるかの設定
         replace_label = tk.Label(frame, text="CSV保存時にタイトルを解析結果に置き換え:", bg="#f0f0f0", font=("Yu Gothic UI", 14), wraplength=150)
         replace_label.grid(row=3, column=0, padx=5, pady=10, sticky=tk.W)
-        self.replace_caption = tk.BooleanVar(frame, self.config_data.getboolean("DEFAULT", "replace_caption"))
+        self.replace_caption = tk.BooleanVar(frame, self.config_data.getboolean("DEFAULT", "replace_caption", fallback=False))
         replace_checkbutton = tk.Checkbutton(frame, variable=self.replace_caption, bg="#ffffff", font=("Yu Gothic UI", 14))
         replace_checkbutton.grid(row=3, column=1, padx=5, pady=10)
 

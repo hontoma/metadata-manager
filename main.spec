@@ -15,7 +15,7 @@ root_dir = SPECPATH
 # 追加のデータファイルを指定
 resources_dir = os.path.join(root_dir, 'resources')
 additional_data = []
-for file_name in ['config.ini', 'version.txt', 'licenses.txt', 'help.txt']:
+for file_name in ['version.txt', 'licenses.txt', 'help.txt']:
     file_path = os.path.join(resources_dir, file_name)
     if os.path.exists(file_path):
         additional_data.append((file_path, 'resources'))
@@ -47,7 +47,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='main',
+    name='MetadataManager-ver0.1.0',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
