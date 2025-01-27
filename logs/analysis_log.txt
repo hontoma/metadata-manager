@@ -1,0 +1,766 @@
+[2025-01-25 15:57:24] Image: 00000-4024780415-model883.fp16-UniPC-Beta-10steps.png
+Analysis Type: CLIP
+Result: anime: 39.83%
+girl: 39.81%
+illegal: 5.13%
+boy: 4.98%
+nsfw: 3.69%...
+
+[2025-01-25 16:06:37] Image: 00000-4024780415-model883.fp16-UniPC-Beta-10steps.png
+Analysis Type: BLIP-2
+Result: anime girl with brown hair and pink shorts standing in front of a building with her hands on her hip...
+
+[2025-01-25 16:07:22] Image: 00000-4024780415-model883.fp16-UniPC-Beta-10steps.png
+Analysis Type: CLIP
+Result: anime: 39.83%
+girl: 39.81%
+illegal: 5.13%
+boy: 4.98%
+nsfw: 3.69%...
+
+[2025-01-26 00:51:04] Image: 00000-4024780415-model883.fp16-UniPC-Beta-10steps.png
+Analysis Type: CLIP
+Result: anime: 39.83%
+girl: 39.81%
+illegal: 5.13%
+boy: 4.98%
+nsfw: 3.69%
+
+[2025-01-26 01:12:02] Image: 00000-4024780415-model883.fp16-UniPC-Beta-10steps.png
+Analysis Type: CLIP
+Result: anime: 39.83%
+girl: 39.81%
+illegal: 5.13%
+boy: 4.98%
+nsfw: 3.69%
+
+[2025-01-26 01:35:38] Image: 00000-4024780415-model883.fp16-UniPC-Beta-10steps.png
+Analysis Type: CLIP
+Result: anime: 39.83%
+girl: 39.81%
+illegal: 5.13%
+boy: 4.98%
+nsfw: 3.69%
+
+[2025-01-26 01:37:36] Image: 00000-1004591117-model883.fp16-UniPC-Beta-10steps.png
+Analysis Type: CLIP
+Result: nsfw: 68.00%
+anime: 11.46%
+girl: 9.50%
+pussy: 7.84%
+boy: 1.42%
+
+[2025-01-26 01:38:22] Image: 00000-1140983886-model924.fp16-DPM++ 2M.png
+Analysis Type: CLIP
+Result: boy: 56.47%
+nsfw: 29.00%
+girl: 9.64%
+pussy: 2.61%
+beautyful: 1.50%
+
+[2025-01-26 01:38:40] Image: 00000-2906128908-model936.fp16-DPM++ 2M.png
+Analysis Type: CLIP
+Result: girl: 48.97%
+beautyful: 17.35%
+nsfw: 17.03%
+pussy: 8.42%
+boy: 6.99%
+
+[2025-01-26 01:38:51] Image: 473392140178741-マイモデル_model760.fp16.safetensors_00001_.png
+Analysis Type: CLIP
+Result: nsfw: 43.69%
+anime: 36.14%
+girl: 9.80%
+pussy: 4.27%
+boy: 3.45%
+
+[2025-01-26 01:45:46] Image: 473392140178741-マイモデル_model760.fp16.safetensors_00001_.png
+Analysis Type: CLIP
+Result: nsfw: 43.69%
+anime: 36.14%
+girl: 9.80%
+pussy: 4.27%
+boy: 3.45%
+
+[2025-01-26 01:52:24] Image: 00045-274828575-model590.fp16-DPM++ 2M Karras.png
+Analysis Type: CLIP
+Result: anime: 59.95%
+boy: 24.81%
+nsfw: 7.75%
+illegal: 4.34%
+girl: 1.30%
+
+[2025-01-26 01:58:35] Image: 00045-274828575-model590.fp16-DPM++ 2M Karras.png
+Analysis Type: CLIP
+Result: anime: 59.95%
+boy: 24.81%
+nsfw: 7.75%
+illegal: 4.34%
+girl: 1.30%
+
+[2025-01-26 01:59:01] Image: 00043-238340566-hassakuHentaiModel_v13.webp
+Analysis Type: CLIP
+Result: girl: 66.02%
+anime: 22.70%
+beautyful: 3.80%
+illegal: 2.57%
+boy: 1.98%
+
+[2025-01-26 01:59:14] Image: 00025-666403459-MyMix_297.fp16-DPM++ 2M Karras.png
+Analysis Type: CLIP
+Result: nsfw: 74.80%
+girl: 9.72%
+anime: 8.74%
+pussy: 2.22%
+boy: 1.97%
+
+[2025-01-26 01:59:23] Image: 00004-153706167-model502.fp16-Euler a.png
+Analysis Type: CLIP
+Result: anime: 81.61%
+girl: 5.41%
+nsfw: 5.32%
+illegal: 2.52%
+boy: 2.11%
+
+[2025-01-26 01:59:32] Image: 00000-4028900582-model883.fp16-UniPC-Beta-20steps.png
+Analysis Type: CLIP
+Result: girl: 64.67%
+anime: 15.30%
+beautyful: 9.72%
+nsfw: 3.94%
+illegal: 2.16%
+
+[2025-01-26 02:00:17] Image: 00000-4196183965-model883.fp16-UniPC-Beta-150steps.png
+Analysis Type: CLIP
+Result: girl: 36.74%
+anime: 29.99%
+nsfw: 19.91%
+illegal: 3.82%
+pussy: 3.23%
+
+[2025-01-26 02:00:33] Image: 00000-1579538354-modelXL951.fp16-UniPC-Beta-10steps.png
+Analysis Type: CLIP
+Result: nsfw: 61.57%
+anime: 12.88%
+girl: 10.37%
+pussy: 7.32%
+boy: 5.75%
+
+[2025-01-26 02:00:53] Image: 00000-2328411815-model883.fp16-UniPC-Beta-35steps.webp
+Analysis Type: CLIP
+Result: nsfw: 39.16%
+anime: 27.67%
+girl: 21.26%
+pussy: 5.39%
+boy: 2.91%
+
+[2025-01-26 02:02:05] Image: 00000-2328411815-model883.fp16-UniPC-Beta-35steps.webp
+Analysis Type: CLIP
+Result: nsfw: 31.87%
+anime: 22.51%
+girl: 17.30%
+long hair: 8.15%
+smiling: 7.15%
+
+[2025-01-26 02:02:19] Image: 00000-470530371-model883.fp16-UniPC-Beta-20steps.webp
+Analysis Type: CLIP
+Result: girl: 31.37%
+anime: 30.75%
+smiling: 25.52%
+long hair: 2.68%
+beautyful: 2.27%
+
+[2025-01-26 02:02:33] Image: 00204-4115712549-model502.fp16-DPM++ 2M Karras.png
+Analysis Type: CLIP
+Result: anime: 63.16%
+boy: 30.88%
+nsfw: 1.01%
+black eyes: 0.85%
+illegal: 0.70%
+
+[2025-01-26 02:02:41] Image: 00045-274828575-model590.fp16-DPM++ 2M Karras.png
+Analysis Type: CLIP
+Result: anime: 54.00%
+boy: 22.35%
+nsfw: 6.98%
+illegal: 3.91%
+smiling: 3.82%
+
+[2025-01-26 02:02:50] Image: 00000-4028900582-model883.fp16-UniPC-Beta-20steps.png
+Analysis Type: CLIP
+Result: girl: 43.41%
+smiling: 12.99%
+anime: 10.27%
+long hair: 9.06%
+beautyful: 6.52%
+
+[2025-01-26 02:03:05] Image: 00000-1666891234-model883.fp16-UniPC-Beta-35steps.png
+Analysis Type: CLIP
+Result: smiling: 28.79%
+anime: 20.67%
+girl: 15.94%
+nsfw: 9.13%
+long hair: 5.79%
+
+[2025-01-26 02:34:18] Image: 00000-4196183965-model883.fp16-UniPC-Beta-150steps.png
+Analysis Type: CLIP
+Result: smiling: 29.50%
+girl: 20.42%
+anime: 16.67%
+nsfw: 11.07%
+long hair: 7.29%
+
+[2025-01-26 14:14:16] Image: 9363528.webp
+Analysis Type: CLIP
+Result: smiling: 27.35%
+anime: 20.01%
+girl: 10.27%
+angry: 9.70%
+nsfw: 7.70%
+
+[2025-01-26 14:14:41] Image: 8866257.webp
+Analysis Type: CLIP
+Result: anime: 34.69%
+smiling: 28.62%
+girl: 13.04%
+nsfw: 4.19%
+illegal: 3.61%
+
+[2025-01-26 14:15:00] Image: 00209-3000354713-model760.fp16-DPM++ 2M.png
+Analysis Type: CLIP
+Result: nsfw: 60.82%
+anime: 28.63%
+pussy: 3.78%
+girl: 1.41%
+illegal: 1.31%
+
+[2025-01-26 14:50:52] Image: 00209-3000354713-model760.fp16-DPM++ 2M.png
+Analysis Type: CLIP
+Result: nsfw: 60.82%
+anime: 28.63%
+pussy: 3.78%
+girl: 1.41%
+illegal: 1.31%
+
+[2025-01-26 14:51:16] Image: 00000-1140983886-model924.fp16-DPM++ 2M.png
+Analysis Type: CLIP
+Result: boy: 52.27%
+nsfw: 26.84%
+girl: 8.92%
+smiling: 3.34%
+pussy: 2.42%
+
+[2025-01-26 14:53:30] Image: 00000-1140983886-model924.fp16-DPM++ 2M.png
+Analysis Type: CLIP
+Result: child: 51.88%
+boy: 21.88%
+nsfw: 11.24%
+photo: 5.22%
+girl: 3.73%
+
+[2025-01-26 14:54:32] Image: 00000-1140983886-model924.fp16-DPM++ 2M.png
+Analysis Type: CLIP
+Result: child: 35.37%
+naked: 31.76%
+boy: 14.91%
+nsfw: 7.66%
+photo: 3.56%
+
+[2025-01-26 14:55:28] Image: 00000-1140983886-model924.fp16-DPM++ 2M.png
+Analysis Type: CLIP
+Result: child: 35.33%
+naked: 31.73%
+boy: 14.90%
+nsfw: 7.65%
+photo: 3.55%
+
+[2025-01-26 14:55:53] Image: 00000-1484455193-model883.fp16-DPM++ 2M-Karras-20steps.webp
+Analysis Type: CLIP
+Result: nsfw: 63.89%
+anime: 9.28%
+girl: 5.73%
+pussy: 4.00%
+black eyes: 2.66%
+
+[2025-01-26 14:59:49] Image: 00000-1484455193-model883.fp16-DPM++ 2M-Karras-20steps.webp
+Analysis Type: CLIP
+Result: nsfw: 61.77%
+anime: 8.97%
+girl: 5.54%
+pussy: 3.87%
+adorable: 3.00%
+
+[2025-01-26 15:00:06] Image: 20241207011539-4163818598-model883.fp16-UniPC-Beta-10steps.webp
+Analysis Type: CLIP
+Result: smiling: 35.19%
+adorable: 17.57%
+long hair: 10.06%
+anime: 9.91%
+girl: 5.64%
+
+[2025-01-26 15:46:26] Image: 00000-2328411815-model883.fp16-UniPC-Beta-35steps.webp
+Analysis Type: CLIP
+Result: nsfw: 23.69%
+anime: 16.73%
+girl: 12.86%
+outdoors: 6.48%
+long hair: 6.06%
+
+[2025-01-26 16:10:31] Image: 00000-2328411815-model883.fp16-UniPC-Beta-35steps.webp
+Analysis Type: CLIP
+Result: nsfw: 23.69%
+anime: 16.73%
+girl: 12.86%
+outdoors: 6.48%
+long hair: 6.06%
+
+[2025-01-26 16:10:53] Image: 07181-1484455193-model590.fp16-DPM++ 2M Karras.png
+Analysis Type: CLIP
+Result: nsfw: 53.92%
+anime: 9.32%
+girl: 8.65%
+naked: 4.62%
+adorable: 4.05%
+
+[2025-01-26 16:25:48] Image: 8866257.webp
+Analysis Type: CLIP
+Result: anime: 18.97%
+smiling: 15.65%
+adorable: 15.00%
+outdoors: 13.81%
+child: 7.34%
+
+[2025-01-26 16:28:40] Image: 05958-1342671195-model604.fp16-DPM++ 2M Karras.png
+Analysis Type: CLIP
+Result: anime: 45.13%
+nsfw: 16.09%
+girl: 8.02%
+outdoors: 6.83%
+friendly: 3.50%
+
+[2025-01-26 16:33:27] Image: 07181-1484455193-model590.fp16-DPM++ 2M Karras.png
+Analysis Type: BLIP-2
+Result: an anime girl laying on a bed with her breasts covered in cream and her pussy open
+
+[2025-01-26 16:34:39] Image: 07181-1484455193-model590.fp16-DPM++ 2M Karras.png
+Analysis Type: CLIP
+Result: nsfw: 53.52%
+anime: 9.25%
+girl: 8.59%
+naked: 4.59%
+adorable: 4.02%
+
+[2025-01-26 22:14:23] Image: 8866257.webp
+Analysis Type: CLIP
+Result: anime: 18.44%
+smiling: 15.21%
+adorable: 14.58%
+outdoors: 13.42%
+child: 7.13%
+
+[2025-01-26 22:15:23] Image: 8866257.webp
+Analysis Type: CLIP
+Result: cute: 23.73%
+anime: 13.97%
+smiling: 11.52%
+adorable: 11.05%
+outdoors: 10.17%
+
+[2025-01-26 22:16:37] Image: 8866257.webp
+Analysis Type: CLIP
+Result: cute: 23.34%
+anime: 13.74%
+smiling: 11.34%
+adorable: 10.87%
+outdoors: 10.00%
+
+[2025-01-26 22:19:10] Image: 8866257.webp
+Analysis Type: CLIP
+Result: cute: 23.21%
+anime: 13.66%
+smiling: 11.27%
+adorable: 10.80%
+outdoors: 9.94%
+
+[2025-01-26 22:20:18] Image: 8866257.webp
+Analysis Type: CLIP
+Result: cute: 22.70%
+anime: 13.36%
+smiling: 11.02%
+adorable: 10.57%
+outdoors: 9.72%
+
+[2025-01-26 22:22:18] Image: 8866257.webp
+Analysis Type: CLIP
+Result: cute: 22.32%
+anime: 13.14%
+smiling: 10.84%
+adorable: 10.39%
+outdoors: 9.56%
+
+[2025-01-26 22:22:37] Image: 07181-1484455193-model590.fp16-DPM++ 2M Karras.png
+Analysis Type: CLIP
+Result: nsfw: 45.11%
+anime: 7.79%
+girl: 7.24%
+cute: 6.18%
+naked: 3.87%
+
+[2025-01-26 22:23:13] Image: 07181-1484455193-model590.fp16-DPM++ 2M Karras.png
+Analysis Type: CLIP
+Result: nsfw: 37.62%
+nipples: 9.43%
+orgasm: 7.15%
+anime: 6.50%
+girl: 6.04%
+
+[2025-01-26 22:24:07] Image: 07181-1484455193-model590.fp16-DPM++ 2M Karras.png
+Analysis Type: CLIP
+Result: nsfw: 36.53%
+nipples: 9.16%
+orgasm: 6.94%
+anime: 6.31%
+girl: 5.86%
+
+[2025-01-26 22:24:22] Image: 00212-2424277486-model502.fp16-DPM++ 2M Karras.png
+Analysis Type: CLIP
+Result: anime: 23.16%
+cute: 14.93%
+friendly: 7.11%
+adorable: 6.61%
+girl: 4.93%
+
+[2025-01-26 22:25:51] Image: 00212-2424277486-model502.fp16-DPM++ 2M Karras.png
+Analysis Type: CLIP
+Result: anime: 23.16%
+cute: 14.93%
+friendly: 7.11%
+adorable: 6.61%
+girl: 4.93%
+
+[2025-01-26 22:30:06] Image: 00212-2424277486-model502.fp16-DPM++ 2M Karras.png
+Analysis Type: CLIP
+Result: anime: 22.72%
+cute: 14.64%
+friendly: 6.98%
+adorable: 6.48%
+girl: 4.83%
+
+[2025-01-26 22:31:05] Image: _323dd8dd-a4fc-481e-820b-bc2a703bf4e8.jpg
+Analysis Type: CLIP
+Result: fantasy: 38.65%
+landscape: 35.37%
+beautyful: 15.39%
+photo: 2.40%
+cool: 1.30%
+
+[2025-01-26 22:31:54] Image: _323dd8dd-a4fc-481e-820b-bc2a703bf4e8.jpg
+Analysis Type: CLIP
+Result: fantasy: 30.91%
+landscape: 28.29%
+castle: 20.03%
+beautyful: 12.31%
+photo: 1.92%
+
+[2025-01-27 00:14:37] Image: 00101-2568764637-model455.fp16-DPM++ 2M Karras.png
+Analysis Type: CLIP
+Result: nsfw: 36.19%
+anime: 10.46%
+erotic: 8.57%
+cute: 5.70%
+pussy: 4.83%
+orgasm: 4.57%
+hot: 3.21%
+girl: 2.42%
+
+[2025-01-27 00:15:46] Image: 00070-1145132447-breakdomainrealistic_R2333.webp
+Analysis Type: CLIP
+Result: adorable: 14.95%
+child: 14.72%
+girl: 13.06%
+cute: 12.57%
+daughter: 6.90%
+anime: 6.89%
+brown eyes: 4.15%
+realistic: 2.85%
+
+[2025-01-27 00:16:00] Image: 00001-561397107-model749.fp16-DPM++ 2M.png
+Analysis Type: CLIP
+Result: daughter: 25.52%
+anime: 12.16%
+portrait: 6.39%
+mother: 5.28%
+girl: 5.26%
+fantasy: 4.01%
+smiling: 3.81%
+ocean: 3.27%
+
+[2025-01-27 00:16:40] Image: 00000-2388877358-model883.fp16-UniPC-Beta-150steps.png
+Analysis Type: CLIP
+Result: smiling: 33.91%
+cute: 15.05%
+adorable: 13.73%
+anime: 5.25%
+long hair: 3.77%
+peaceful: 3.68%
+girl: 3.22%
+day: 1.91%
+
+[2025-01-27 00:16:56] Image: 00000-80463344-model883.fp16-UniPC-Beta-10steps.png
+Analysis Type: CLIP
+Result: nipples: 27.35%
+anime: 9.66%
+fantasy: 7.93%
+nsfw: 6.58%
+erotic: 6.23%
+hot: 4.70%
+mother: 4.34%
+dark: 3.38%
+
+[2025-01-27 00:17:15] Image: 00000-2135786561-model883.fp16-UniPC-Beta-10steps.png
+Analysis Type: CLIP
+Result: nsfw: 29.98%
+anime: 10.08%
+erotic: 7.47%
+nipples: 6.22%
+girl: 5.88%
+cute: 3.00%
+pussy: 2.14%
+blue sky: 2.11%
+
+[2025-01-27 00:17:36] Image: 00004-2814865820-MyMix_v8_anime.fp16.webp
+Analysis Type: CLIP
+Result: nsfw: 14.38%
+cute: 13.10%
+erotic: 12.74%
+anime: 7.64%
+adorable: 6.62%
+outdoors: 4.39%
+realistic: 2.78%
+hot: 2.75%
+
+[2025-01-27 00:17:50] Image: 00004-2814865820-MyMix_v8_anime.fp16.webp
+Analysis Type: CLIP
+Result: nsfw: 14.38%
+cute: 13.10%
+erotic: 12.74%
+anime: 7.64%
+adorable: 6.62%
+outdoors: 4.39%
+realistic: 2.78%
+hot: 2.75%
+day: 2.66%
+ocean: 2.32%
+
+[2025-01-27 00:18:05] Image: 00004-1343330275-meinahentai_v3.webp
+Analysis Type: CLIP
+Result: cute: 17.71%
+adorable: 17.02%
+anime: 11.89%
+smiling: 5.46%
+nsfw: 4.78%
+day: 4.20%
+outdoors: 3.20%
+erotic: 3.19%
+boy: 2.86%
+girl: 2.85%
+child: 2.67%
+hot: 1.72%
+
+[2025-01-27 00:18:21] Image: 00017-501694328-MyanimeMix_v1.fp16.png
+Analysis Type: CLIP
+Result: anime: 32.61%
+outdoors: 15.92%
+girl: 6.59%
+adorable: 5.49%
+child: 5.40%
+cute: 5.16%
+daughter: 3.96%
+smiling: 2.50%
+realistic: 2.38%
+portrait: 2.01%
+boy: 1.86%
+brown eyes: 1.68%
+
+[2025-01-27 00:19:35] Image: 00017-501694328-MyanimeMix_v1.fp16.png
+Analysis Type: CLIP
+Result: anime: 32.29%
+outdoors: 15.76%
+girl: 6.52%
+adorable: 5.44%
+child: 5.35%
+cute: 5.11%
+daughter: 3.93%
+smiling: 2.47%
+realistic: 2.36%
+portrait: 2.00%
+boy: 1.84%
+brown eyes: 1.66%
+
+[2025-01-27 00:19:58] Image: 00000-2241447104-model883.fp16-DPM++ 2M-Karras-20steps.webp
+Analysis Type: CLIP
+Result: anime: 19.39%
+smiling: 14.50%
+cute: 12.30%
+adorable: 8.49%
+ahegao: 5.12%
+nsfw: 4.09%
+girl: 3.51%
+erotic: 2.37%
+long hair: 2.31%
+day: 2.28%
+brown eyes: 2.01%
+underwear: 1.42%
+
+[2025-01-27 00:20:22] Image: 00115-4207918335-MyanimeMix_v1.fp16.png
+Analysis Type: CLIP
+Result: smiling: 13.16%
+anime: 10.13%
+adorable: 9.87%
+cute: 9.39%
+girl: 7.24%
+portrait: 6.09%
+blue sky: 4.93%
+outdoors: 3.04%
+daughter: 2.86%
+brown eyes: 2.68%
+day: 2.26%
+black eyes: 2.13%
+
+[2025-01-27 00:21:08] Image: 00115-4207918335-MyanimeMix_v1.fp16.png
+Analysis Type: CLIP
+Result: winter: 34.10%
+smiling: 8.47%
+anime: 6.53%
+adorable: 6.36%
+cute: 6.05%
+girl: 4.67%
+portrait: 3.92%
+blue sky: 3.18%
+outdoors: 1.96%
+daughter: 1.84%
+brown eyes: 1.72%
+day: 1.46%
+
+[2025-01-27 00:21:38] Image: 00115-4207918335-MyanimeMix_v1.fp16.png
+Analysis Type: CLIP
+Result: winter: 34.23%
+smiling: 8.51%
+anime: 6.55%
+adorable: 6.38%
+cute: 6.07%
+girl: 4.68%
+portrait: 3.94%
+blue sky: 3.19%
+outdoors: 1.97%
+daughter: 1.85%
+brown eyes: 1.73%
+black eyes: 1.38%
+
+[2025-01-27 00:21:53] Image: 00183-465200860-MyMix_210.fp16-Euler a.png
+Analysis Type: CLIP
+Result: child: 15.04%
+ocean: 13.63%
+anime: 11.69%
+adorable: 10.78%
+girl: 9.77%
+cute: 8.69%
+brown eyes: 4.36%
+daughter: 3.65%
+beautyful: 2.83%
+summer: 2.71%
+realistic: 2.68%
+fantasy: 1.31%
+
+[2025-01-27 00:22:19] Image: 00183-465200860-MyMix_210.fp16-Euler a.png
+Analysis Type: CLIP
+Result: child: 15.04%
+ocean: 13.63%
+anime: 11.69%
+adorable: 10.78%
+girl: 9.77%
+cute: 8.69%
+brown eyes: 4.36%
+daughter: 3.65%
+beautyful: 2.83%
+summer: 2.71%
+realistic: 2.68%
+fantasy: 1.31%
+portrait: 1.18%
+blue sky: 1.06%
+natural: 1.01%
+pretty: 0.91%
+boy: 0.86%
+nsfw: 0.78%
+dressed: 0.66%
+son: 0.59%
+
+[2025-01-27 00:22:48] Image: 00043-238340566-hassakuHentaiModel_v13.webp
+Analysis Type: CLIP
+Result: smiling: 17.70%
+child: 10.50%
+girl: 8.31%
+adorable: 7.88%
+spring: 7.50%
+cute: 6.21%
+daughter: 5.25%
+portrait: 5.22%
+outdoors: 4.44%
+summer: 3.98%
+dressed: 3.20%
+anime: 2.86%
+short hair: 2.54%
+daytime: 1.10%
+peaceful: 1.10%
+brown eyes: 1.08%
+blue sky: 1.07%
+friendly: 1.04%
+long hair: 1.04%
+pretty: 0.58%
+
+[2025-01-27 00:23:07] Image: 00045-274828575-model590.fp16-DPM++ 2M Karras.png
+Analysis Type: CLIP
+Result: father: 43.25%
+portrait: 14.19%
+anime: 8.33%
+son: 6.20%
+illustration: 4.67%
+boy: 3.45%
+realistic: 3.03%
+nsfw: 1.08%
+dressed: 0.97%
+daytime: 0.88%
+outdoors: 0.88%
+building: 0.87%
+male: 0.84%
+cool: 0.78%
+photo: 0.68%
+adult: 0.63%
+illegal: 0.60%
+erotic: 0.60%
+smiling: 0.59%
+hot: 0.59%
+
+[2025-01-27 00:23:41] Image: 00281-48500638-model590.fp16-DPM++ 2M Karras.png
+Analysis Type: CLIP
+Result: anime: 19.08%
+erotic: 10.11%
+fantasy: 7.75%
+outdoors: 6.23%
+nsfw: 4.65%
+daytime: 4.06%
+smiling: 3.54%
+ecstasy: 3.17%
+summer: 2.93%
+nipples: 2.72%
+friendly: 2.61%
+cute: 2.56%
+adorable: 2.27%
+beautyful: 2.01%
+ahegao: 1.76%
+girl: 1.57%
+hot: 1.51%
+realistic: 1.45%
+orgasm: 1.42%
+daughter: 1.29%
+

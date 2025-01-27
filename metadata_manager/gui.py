@@ -3,9 +3,11 @@ import tkinter as tk
 from tkinterdnd2 import DND_FILES, TkinterDnD
 import threading
 import os
+import datetime
 from .processing import MetadataManager
 from tkinter import messagebox, filedialog
 from tkinter import ttk
+import matplotlib.pyplot as plt
 # リソースファイルの読み込み
 from resources import get_resource_content
 from metadata_manager.config import CONFIG_FILE
@@ -15,6 +17,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
     def __init__(self, analyzer):
         super().__init__()
         self.analyzer = analyzer
+        self.is_closing = False
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
         taskbar_height = 95
@@ -27,12 +30,20 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         self.config_data.read(CONFIG_FILE)
         self.create_widgets()
         self.metadata_manager = MetadataManager()
+        self.analysis_model = self.config_data.get('DEFAULT', 'analysis_model', fallback='blip2')
+
+        # 終了処理
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        # グラフウィンドウの初期化
+        self.graph_window = None
+
         # 画像のファイルパス及びファイル名
         self.current_file_name = None
         self.current_file_path = None
         #解析中の確認用変数
         self.is_analyzing = False
-        # blip-2での分析結果
+        # blip-2での解析結果
         self.original_caption = None
 
     def create_widgets(self):
@@ -118,9 +129,9 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         self.extra_info_scrollbar.grid(row=5, column=2, sticky=tk.NS)
         self.extra_info.config(yscrollcommand=self.extra_info_scrollbar.set)
 
-        # BLIP-2解析データ・もしくは追加テキスト表示及び編集エリア
+        # 解析データ・もしくは追加テキストの表示及び編集エリア
         # self.analyzerがNoneの場合には「追加テキスト」とラベル名を変更
-        label_name = "追加テキスト" if self.analyzer is None else "BLIP-2解析データ"
+        label_name = "追加テキスト" if self.analyzer is None else "解析データ"
         self.result_frame = tk.LabelFrame(main_frame, text=f"{label_name}（編集可）", font=("Yu Gothic UI", 12), bg="#ffffff", relief="sunken", bd=1)
         self.result_frame.pack(pady=10, padx=20, fill=tk.BOTH, expand=True)
         self.additional_text = tk.Text(self.result_frame, height=2, width=80, font=("Yu Gothic UI", 11), wrap=tk.WORD)
@@ -133,7 +144,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         self.button_frame = tk.Frame(main_frame, bg="#f0f0f0")
         self.button_frame.pack(pady=10)
         if self.analyzer is not None:
-            self.analyze_button = tk.Button(self.button_frame, text="BLIP-2で解析", command=self.analyze_with_blip, bg="#2196F3", fg="white", font=("Yu Gothic UI", 12, "bold"), padx=20, pady=5)
+            self.analyze_button = tk.Button(self.button_frame, text="AIで解析", command=self.analyze_with_AI, bg="#2196F3", fg="white", font=("Yu Gothic UI", 12, "bold"), padx=20, pady=5)
             self.analyze_button.pack(side=tk.LEFT, padx=10)
         self.write_button = tk.Button(self.button_frame, text="データを画像に保存", command=self.add_blip_caption_to_metadata, bg="#4CAF50", fg="white", font=("Yu Gothic UI", 11, "bold"), padx=20, pady=5)
         self.write_button.pack(side=tk.LEFT, padx=10)
@@ -213,8 +224,8 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
             self.current_file_path = None
             self.original_caption = None
 
-    def analyze_with_blip(self):
-        """BLIP-2で画像を解析するメソッド"""
+    def analyze_with_AI(self):
+        """AIで画像を解析するメソッド"""
 
         # self.analyzerがNoneの場合のエラー表示（無い場合はメソッド自体を使用しないが念の為）
         if self.analyzer is None:
@@ -235,29 +246,61 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
             self.save_metadata_button.config(state=tk.DISABLED)
             self.discard_button.config(state=tk.DISABLED)
 
-            self.update_status("BLIP-2モデルをロード中...",status_type="processing")
+            self.update_status("画像解析用のモデルをロード中...",status_type="processing")
             self.progressbar.start() 
             
             # threading.Threadを使用して、ロードと解析を別スレッドで実行
-            thread = threading.Thread(target=self.run_blip_analysis)
+            thread = threading.Thread(target=self.run_analysis)
             thread.start()
         else:
-            self.update_status("分析する画像がありません",status_type="error")
+            self.update_status("解析する画像がありません",status_type="error")
 
-    def run_blip_analysis(self):
-        """BLIP-2のロードと解析を行うメソッド"""
+    def run_analysis(self):
+        """AIモデルのロードと解析を行うメソッド"""
 
         # ライト版の場合の処理の無効化（念の為）
         if self.analyzer is None:
             return
 
-        self.analyzer.load_model()  # メインスレッドをブロックしないように、別スレッドでロード
-        self.update_status("画像を分析中...", status_type="processing")
+        self.update_status("画像を解析中...", status_type="processing")
+        
+        # analyzeに使用するモデルについての設定を読み込む
+        self.metadata_manager.reload_config()  # config.iniを再読み込み
+        self.analysis_model = self.metadata_manager.config_data.get('DEFAULT', 'analysis_model', fallback='blip2')
+        self.is_show_clip_graph = self.metadata_manager.config_data.getboolean('DEFAULT', 'is_show_clip_graph', fallback=True)
 
-        result = self.analyzer.analyze_image(self.current_file_path)
+        if self.analysis_model == 'CLIP':
+            # CLIPでの解析
+            result = self.analyzer.analyze_image_with_clip(self.current_file_path)
+            analysis_type = "CLIP"
+            categories = []
+            probabilities = []
+            for line in result.split("\n"):
+                category, prob = line.split(":")
+                categories.append(category)
+                probabilities.append(float(prob.strip("%"))/100)
+
+            # グラフ表示
+            if self.is_show_clip_graph:
+                self.after(0, lambda: self.show_graph(categories, probabilities))
+        else:
+            # BLIP-2での解析
+            result = self.analyzer.analyze_image_with_blip(self.current_file_path)
+            analysis_type = "BLIP-2"
+
+        # 解析結果をログに記録
+        self.log_analysis(self.current_file_name, analysis_type, result)
+
+        # メインスレッドでGUIを更新
+        if self.analysis_model == 'CLIP':
+            self.after(0, lambda: self.update_gui_after_analysis(", ".join(categories)))
+        else:
+            self.after(0, lambda: self.update_gui_after_analysis(result))
+        
+    def update_gui_after_analysis(self, result):
         self.additional_text.insert(tk.END, result)
         self.original_caption = result
-        self.update_status("BLIP-2による画像分析が完了しました", status_type="success")
+        self.update_status("画像解析が完了しました", status_type="success")
         self.progressbar.stop()
 
         # 解析完了後のフラグ処理とボタンの有効化
@@ -438,6 +481,40 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         self.prefix = tk.Entry(frame, width=30, font=("Yu Gothic UI", 14), textvariable=self.prefix_word)
         self.prefix.grid(row=4, column=1, padx=5, pady=10, sticky=tk.EW)
 
+        # 解析モデルの選択
+        model_label = tk.Label(frame, text="解析モデル:", bg="#f0f0f0", font=("Yu Gothic UI", 14))
+        model_label.grid(row=5, column=0, padx=5, pady=10, sticky=tk.W)
+        self.model_var = tk.StringVar(value=self.config_data.get('DEFAULT', 'analysis_model', fallback='blip2'))
+        model_combo = ttk.Combobox(frame, textvariable=self.model_var, values=['BLIP-2', 'CLIP'], state="readonly", font=("Yu Gothic UI", 14))
+        model_combo.grid(row=5, column=1, padx=5, pady=10, sticky=tk.EW)
+
+        # CLIPで解析するワードの設定
+        tk.Label(frame, text="CLIPのカテゴリー設定:").grid(row=6, column=0, sticky="w")
+        self.clip_categories = tk.Text(frame, height=5, width=50, font=("Yu Gothic UI", 14))
+        self.clip_categories.grid(row=6, column=1, sticky="we")
+        self.clip_categories.insert(tk.END, self.config_data.get('DEFAULT', 'clip_categories', fallback=''))
+
+        # CLIPの解析結果で表示するワードの数を指定するスライダー
+        self.word_count_var = tk.IntVar(value=int(self.config_data.get('DEFAULT', 'word_count', fallback=5)))
+        word_count_label = tk.Label(frame, text="CLIPで表示するワード数:", bg="#f0f0f0", font=("Yu Gothic UI", 14))
+        word_count_label.grid(row=7, column=0, sticky="w")
+        word_count_scale = tk.Scale(frame,from_=1,to=20,orient=tk.HORIZONTAL,variable=self.word_count_var,length=200)
+        word_count_scale.grid(row=7, column=1, sticky="w")
+        word_count_value_label = tk.Label(frame, textvariable=self.word_count_var, bg="#f0f0f0", font=("Yu Gothic UI", 14)) # 現在の値を表示するラベル
+        word_count_value_label.grid(row=7, column=1, sticky="e")
+        
+        def update_word_count(*args):# スライダーの値が変更されたときに呼び出される関数
+            self.word_count_var.set(int(self.word_count_var.get()))
+        
+        self.word_count_var.trace_add("write", update_word_count)# スライダーの値が変更されたときにupdate_word_count関数を呼び出す
+
+        # CLIP解析でグラフ表示を行うかの選択        
+        graph_label = tk.Label(frame, text="CLIP解析でグラフ表示を行うか:", bg="#f0f0f0", font=("Yu Gothic UI", 14))
+        graph_label.grid(row=8, column=0, sticky="w")
+        self.graph_var = tk.BooleanVar(frame, self.config_data.getboolean("DEFAULT", "is_show_clip_graph", fallback=True))
+        graph_checkbutton = tk.Checkbutton(frame, variable=self.graph_var, bg="#ffffff", font=("Yu Gothic UI", 14))
+        graph_checkbutton.grid(row=8, column=1, padx=5, pady=10)
+
         # ボタンフレーム
         button_frame = tk.Frame(scrollable_frame, bg="#f0f0f0")
         button_frame.pack(pady=20)
@@ -457,6 +534,45 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         # Configure grid weights
         frame.grid_columnconfigure(1, weight=1)
 
+    def show_graph(self, categories, probabilities):
+        """別ウィンドウでグラフを表示するメソッド"""
+        import matplotlib.pyplot as plt
+        from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
+        try:
+            if self.graph_window is None or not self.graph_window.winfo_exists():
+                self.graph_window = tk.Toplevel(self)
+                self.graph_window.title("解析結果グラフ")
+                self.graph_window.geometry("800x600")
+                self.fig, self.ax = plt.subplots(figsize=(8, 6))
+                self.canvas = FigureCanvasTkAgg(self.fig, master=self.graph_window)
+                self.canvas_widget = self.canvas.get_tk_widget()
+                self.canvas_widget.pack(fill=tk.BOTH, expand=True)
+                
+                # ウィンドウが閉じられたときの処理
+                self.graph_window.protocol("WM_DELETE_WINDOW", self.on_graph_window_close)
+            else:
+                self.graph_window.lift()  # ウィンドウを前面に
+            
+            self.ax.clear()
+            self.ax.bar(categories, probabilities)
+            self.ax.set_ylabel('確率')
+            self.ax.set_title('カテゴリ別確率')
+            plt.xticks(rotation=45, ha='right')
+            plt.tight_layout()
+
+            self.canvas.draw()
+
+        except Exception as e:
+            self.update_status(f"グラフの表示中にエラーが発生しました: {str(e)}", status_type="error")
+            messagebox.showerror("エラー", f"グラフの表示中にエラーが発生しました: {str(e)}")
+
+    def on_graph_window_close(self):
+        """グラフウィンドウが閉じられたときの処理"""
+        plt.close(self.fig)
+        self.graph_window.destroy()
+        self.graph_window = None
+
     def save_settings(self):
         """設定値を保存する"""
         # 設定値を取得
@@ -465,6 +581,10 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         caption_position = self.caption_position.get()
         replace_caption = self.replace_caption.get()
         csv_title_prefix = self.prefix.get()
+        selected_model = self.model_var.get()
+        clip_categories = self.clip_categories.get("1.0", tk.END).strip()
+        word_count = self.word_count_var.get()
+        is_show_clip_graph = self.graph_var.get()
 
 
         # 設定値を保存（configparserを使用）
@@ -474,7 +594,10 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
             'caption_position': caption_position,
             'replace_caption': str(replace_caption).lower(),
             'csv_title_prefix': csv_title_prefix,
-            
+            'analysis_model': selected_model,
+            'clip_categories': clip_categories,
+            'word_count': str(word_count),
+            'is_show_clip_graph': str(is_show_clip_graph).lower()
         }
         with open(CONFIG_FILE, 'w') as configfile:
             self.config_data.write(configfile)
@@ -569,3 +692,40 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
             messagebox.showerror("エラー", "version.txt ファイルが見つかりません。")
         except Exception as e:
             messagebox.showerror("エラー", f"バージョン情報の読み込み中にエラーが発生しました: {str(e)}")
+    
+    def log_analysis(self, image_name, analysis_type, result):
+        """解析結果をログファイルに記録するメソッド"""
+        # ユーザーのホームディレクトリを取得
+        config_dir = os.path.join(os.path.expanduser('~'), '.metadata_manager')
+        log_dir = os.path.join(config_dir, 'logs')
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+        
+        log_file = os.path.join(log_dir, "analysis_log.txt")
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        with open(log_file, "a", encoding="utf-8") as f:
+            f.write(f"[{timestamp}] Image: {image_name}\n")
+            f.write(f"Analysis Type: {analysis_type}\n")
+            f.write(f"Result: {result}\n\n")
+
+    def on_closing(self):
+        """アプリケーションの終了処理"""
+        # すでに終了処理中の場合は処理を開始しない
+        if self.is_closing:
+            return
+        # 処理中のフラグを立てる
+        self.is_closing = True
+
+        # 実行中のスレッドがあれば終了を待つ
+        if hasattr(self, 'analysis_thread') and self.analysis_thread.is_alive():
+            self.analysis_thread.join(timeout=1)  # 1秒待つ
+
+        # リソースの解放
+        if hasattr(self, 'analyzer') and self.analyzer:
+            self.analyzer.close()
+
+        # アプリケーションを終了
+        plt.close(self.fig)
+        self.quit()
+        self.destroy()
