@@ -1,5 +1,4 @@
 import os
-import sys
 import configparser
 
 def get_config_path():
@@ -20,7 +19,15 @@ def create_default_config():
         'caption_position': 'BOTTOM',
         'replace_caption': 'False',
         'csv_title_prefix': '',
-        'clone_save_path': os.path.join(os.path.expanduser('~'), 'Desktop')
+        'clone_save_path': os.path.join(os.path.expanduser('~'), 'Desktop'),
+        'analysis_model': 'CLIP',
+        'clip_categories': '',
+        'word_count': '5',
+        'is_show_result_graph': 'True',
+        'ui_font_name': '',
+        'ui_font_size': 12,
+        'text_font_name': '',
+        'text_font_size': 14
     }
     
     with open(CONFIG_FILE, 'w') as configfile:

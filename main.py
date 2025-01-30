@@ -7,7 +7,8 @@ def main():
     config = get_config()
 
     # Matplotlibのフォント設定
-    plt.rcParams['font.family'] = 'Yu Gothic, Meiryo, MS Gothic'
+    ui_font_name = config.get('DEFAULT', 'ui_font_name', fallback='Yu Gothic, Meiryo, MS Gothic')
+    plt.rcParams['font.family'] = ui_font_name
 
     # image_analyzer.pyが存在する場合はインポート
     try:
