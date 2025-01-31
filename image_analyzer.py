@@ -1,5 +1,6 @@
 from PIL import Image
 import cv2
+import os
 from PIL import Image
 from metadata_manager.config import get_config
 
@@ -11,8 +12,10 @@ class ImageAnalyzer:
         self.clip_processor = None
         self.clip_model = None
         self.config = config
-        self.mobilenet = None
-        self.mobilenet_preprocess = None
+        self.mobilenet_v3_small_model = None
+        self.mobilenet_v3_large_model = None
+        self.mobilenet_v3_small_model_preprocess = None
+        self.mobilenet_v3_large_model_preprocess = None
         self.class_labels = None
 
     def load_torch(self):
@@ -36,9 +39,9 @@ class ImageAnalyzer:
             elif model_name == "BLIP-2":
                 self.load_blip_model()
             elif model_name == "MobileNet_v3_Small":
-                self.load_mobilenet("small")
+                self.load_mobilenet_model("small")
             elif model_name == "MobileNet_v3_Large":
-                self.load_mobilenet("large")
+                self.load_mobilenet_model("large")
             
             return True
         except Exception as e:
@@ -47,6 +50,11 @@ class ImageAnalyzer:
     def get_latest_config(self):
         """最新の設定を取得するメソッド"""
         return get_config()
+    
+    def get_model_path(self, model_name):
+        """モデルのパスを取得するメソッド"""
+        app_dir = os.path.join(os.path.expanduser('~'), '.metadata_manager')
+        return os.path.join(app_dir, 'models', model_name)
   
     def preprocess_image(self, image_path):
         """画像を前処理するメソッド"""
@@ -60,10 +68,14 @@ class ImageAnalyzer:
         """BLIP-2モデルをロードするメソッド"""
         import torch
         from transformers import Blip2Processor, Blip2ForConditionalGeneration
+
+        model_path = self.get_model_path("blip2-opt-2.7b")
+
         if self.blip_model is None:
-            self.blip_processor = Blip2Processor.from_pretrained("Salesforce/blip2-opt-2.7b")
+            self.blip_processor = Blip2Processor.from_pretrained("Salesforce/blip2-opt-2.7b", cache_dir=model_path)
             self.blip_model = Blip2ForConditionalGeneration.from_pretrained(
                 "Salesforce/blip2-opt-2.7b",
+                cache_dir=model_path,
                 device_map="auto",
                 torch_dtype=torch.float16,
                 low_cpu_mem_usage=True
@@ -85,9 +97,12 @@ class ImageAnalyzer:
     def load_clip_model(self):
         """CLIPモデルをロードするメソッド"""
         from transformers import CLIPProcessor, CLIPModel
+
+        model_path = self.get_model_path("clip-vit-base-patch32")
+
         if self.clip_model is None:
-            self.clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
-            self.clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+            self.clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32", cache_dir=model_path)
+            self.clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32", cache_dir=model_path)
 
     def analyze_image_with_clip(self, image_path):
         """CLIPを使用して画像を解析し、カテゴリを予測するメソッド"""
@@ -127,30 +142,73 @@ class ImageAnalyzer:
         except Exception as e:
             return f"CLIPによる解析中にエラーが発生しました: {str(e)}"
 
-    def load_mobilenet(self, version):
-        """MobileNetV3をロードするメソッド"""
+    def load_mobilenet_model(self, version):
+        """MobileNetV3モデルをロードするメソッド"""
+        import torch
+
+        model_path = self.get_model_path(f"mobilenet_v3_{version}")
+        model_file = os.path.join(model_path, f"mobilenet_v3_{version}.pth")
+
         if version == "small":
             from torchvision.models import mobilenet_v3_small, MobileNet_V3_Small_Weights
+            if self.mobilenet_v3_small_model is None:
+                if os.path.exists(model_file):
+                # 既に保存されているモデルを読み込む
+                    self.mobilenet_v3_small_model = mobilenet_v3_small()
+                    self.mobilenet_v3_small_model.load_state_dict(torch.load(model_file, map_location=torch.device('cpu'), weights_only=True))
+                else:
+                # モデルをダウンロードして保存
+                    weights = MobileNet_V3_Small_Weights.DEFAULT
+                    self.mobilenet_v3_small_model = mobilenet_v3_small(weights=weights)
+                    
+                    # ディレクトリが存在しない場合は作成
+                    os.makedirs(model_path, exist_ok=True)
+                    torch.save(self.mobilenet_v3_small_model.state_dict(), model_file)
+                    print(f"Downloaded and saved model to {model_file}")
+                
+                self.mobilenet_v3_small_model.eval()
+                self.mobilenet_v3_small_model_preprocess = MobileNet_V3_Small_Weights.DEFAULT.transforms()
+            
+                # クラスラベルを取得
+                self.class_labels = MobileNet_V3_Small_Weights.DEFAULT.meta["categories"]
+
         elif version == "large":
             from torchvision.models import mobilenet_v3_large, MobileNet_V3_Large_Weights
-        if self.mobilenet is None:
-            weights = MobileNet_V3_Small_Weights.DEFAULT if version == "small" else MobileNet_V3_Large_Weights.DEFAULT
-            self.mobilenet = mobilenet_v3_small(weights=weights) if version == "small" else mobilenet_v3_large(weights=weights)
-            self.mobilenet.eval()
-            self.mobilenet_preprocess = weights.transforms()
-            
-            # クラスラベルを取得
-            self.class_labels = weights.meta["categories"]
+            if self.mobilenet_v3_large_model is None:
+                if os.path.exists(model_file):
+                    self.mobilenet_v3_large_model = mobilenet_v3_large()
+                    self.mobilenet_v3_large_model.load_state_dict(torch.load(model_file, map_location=torch.device('cpu'), weights_only=True))
+                    print(f"Loaded existing model from {model_file}")
+                else:
+                    # モデルをダウンロードして保存
+                    weights = MobileNet_V3_Large_Weights.DEFAULT
+                    self.mobilenet_v3_large_model = mobilenet_v3_large(weights=weights)
+                    print(f"Loaded existing model from {model_file}")
+                    
+                    # ディレクトリが存在しない場合は作成
+                    os.makedirs(model_path, exist_ok=True)
+                    torch.save(self.mobilenet_v3_large_model.state_dict(), model_file)
+                    print(f"Downloaded and saved model to {model_file}")
+                
+                self.mobilenet_v3_large_model.eval()
+                self.mobilenet_v3_large_model_preprocess = MobileNet_V3_Large_Weights.DEFAULT.transforms()
+                
+                # クラスラベルを取得
+                self.class_labels = MobileNet_V3_Large_Weights.DEFAULT.meta["categories"]
 
-    def analyze_image_with_mobilenet(self, image_path):
+    def analyze_image_with_mobilenet(self, image_path, version):
         """MobileNetV3を使用して画像を解析するメソッド"""
         import torch
         try:
             image = Image.open(image_path).convert('RGB')
-            input_tensor = self.mobilenet_preprocess(image).unsqueeze(0)
             
             with torch.no_grad():
-                output = self.mobilenet(input_tensor)
+                if version == "small":
+                    input_tensor = self.mobilenet_v3_small_model_preprocess(image).unsqueeze(0)
+                    output = self.mobilenet_v3_small_model(input_tensor)
+                elif version == "large":
+                    input_tensor = self.mobilenet_v3_large_model_preprocess(image).unsqueeze(0)
+                    output = self.mobilenet_v3_large_model(input_tensor)
 
             # 最新の設定を取得
             latest_config = self.get_latest_config()
@@ -175,5 +233,7 @@ class ImageAnalyzer:
             del self.blip_model
         if hasattr(self, 'clip_model'):
             del self.clip_model
-        if hasattr(self, 'mobilenet'):
-            del self.mobilenet
+        if hasattr(self, 'mobilenet_v3_small_model'):
+            del self.mobilenet_v3_small_model
+        if hasattr(self, 'mobilenet_v3_large_model'):
+            del self.mobilenet_v3_large_model

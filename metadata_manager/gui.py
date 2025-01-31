@@ -337,7 +337,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         
         # analyzeに使用するモデルについての設定を読み込む
         self.metadata_manager.reload_config()  # config.iniを再読み込み
-        self.analysis_model = self.metadata_manager.config_data.get('DEFAULT', 'analysis_model', fallback='blip2')
+        self.analysis_model = self.metadata_manager.config_data.get('DEFAULT', 'analysis_model', fallback='CLIP')
         self.is_show_result_graph = self.metadata_manager.config_data.getboolean('DEFAULT', 'is_show_result_graph', fallback=True)
 
         self.update_status("torchライブラリのロード中...", status_type="processing")
@@ -349,7 +349,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
                 self.update_status("Torchのロードに失敗しました。処理を続行できません", status_type="error")
                 return
         
-        self.update_status("画像解析用のモデルをロード中...",status_type="processing")
+        self.update_status(f"画像解析用のモデル({self.analysis_model})をロード中...",status_type="processing")
         model_load_result = self.analyzer.load_model(self.analysis_model)
         if model_load_result is False:
             self.update_status("解析用のモデルをロードできませんでした。処理を続行できません", status_type="error")
@@ -374,7 +374,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         
         elif self.analysis_model == 'MobileNet_v3_Small':
             # MobileNet_v3_Smallでの解析
-            result = self.analyzer.analyze_image_with_mobilenet(self.current_file_path)
+            result = self.analyzer.analyze_image_with_mobilenet(self.current_file_path, "small")
             analysis_type = "MobileNet_v3_Small"
 
             categories, probabilities = self.separate_categories_from_result(result)
@@ -385,7 +385,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         
         elif self.analysis_model == 'MobileNet_v3_Large':
             # MobileNet_v3_Largeでの解析
-            result = self.analyzer.analyze_image_with_mobilenet(self.current_file_path)
+            result = self.analyzer.analyze_image_with_mobilenet(self.current_file_path, "large")
             analysis_type = "MobileNet_v3_Large"
 
             categories, probabilities = self.separate_categories_from_result(result)
@@ -724,6 +724,9 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         # Configure grid weights
         frame.grid_columnconfigure(1, weight=1)
 
+        # ウィンドウが閉じられたときの処理を追加
+        self.settings_window.protocol("WM_DELETE_WINDOW", self.close_settings_window)
+
     def show_graph(self, categories, probabilities):
         """別ウィンドウでグラフを表示するメソッド"""
         import matplotlib.pyplot as plt
@@ -811,8 +814,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
             self.update_fonts("text")
 
         # 設定画面を閉じる
-        self.settings_window.grab_release()
-        self.settings_window.destroy()
+        self.close_settings_window()
         self.update_status("設定を保存しました")
 
     def update_fonts(self, part):
@@ -847,8 +849,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
 
     def settings_discard(self):
         """設定変更を破棄する"""
-        self.settings_window.grab_release()
-        self.settings_window.destroy()
+        self.close_settings_window()
         self.update_status("設定の変更を破棄しました")
 
     def select_csv_file(self):
@@ -969,3 +970,27 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
             self.on_graph_window_close()
         self.quit()
         self.destroy()
+
+    def close_settings_window(self):
+        """設定画面を閉じるメソッド"""
+        if hasattr(self, 'settings_window') and self.settings_window.winfo_exists():
+            try:
+                self.settings_window.grab_release()
+            except Exception as e:
+                print(f"Error releasing settings window: {str(e)}")
+            # Tkinter変数を解放
+            tk_vars = [
+                'ui_font_name_var', 'ui_font_size_var', 
+                'text_font_name_var', 'text_font_size_var', 
+                'caption_position', 'replace_caption', 
+                'prefix_word', 'model_var', 'word_count_var', 
+                'graph_var'
+            ]
+            
+            for var_name in tk_vars:
+                if hasattr(self, var_name):
+                    delattr(self, var_name)
+            
+            # ウィンドウを破棄
+            self.settings_window.destroy()
+            self.settings_window = None
