@@ -6,32 +6,45 @@ import os
 import win32api
 import datetime
 from tkinter import font
-from .processing import MetadataManager
 from tkinter import messagebox, filedialog
 from tkinter import ttk
 import matplotlib.pyplot as plt
+
 # リソースファイルの読み込み
+from .processing import MetadataManager
 from resources import get_resource_content
 from metadata_manager.config import CONFIG_FILE
 
 class ImageAnalyzerApp(TkinterDnD.Tk):
     """画像解析アプリケーションのGUIを作成するクラス"""
-    def __init__(self, analyzer):
+    def __init__(self):
         super().__init__()
-        self.analyzer = analyzer
-        self.is_closing: bool = False
+
+        # configファイルの読み込み
+        self.config_data = configparser.ConfigParser()
+        self.config_data.read(CONFIG_FILE)
+
+        # Matplotlibのフォント設定
+        ui_font_name = self.config_data.get('DEFAULT', 'ui_font_name', fallback='Yu Gothic, Meiryo, MS Gothic')
+        plt.rcParams['font.family'] = f"{ui_font_name}, sans-serif"
+        
+        # ImageAnalyzerのインポートと初期化
+        try:
+            from image_analyzer import ImageAnalyzer
+            self.analyzer = ImageAnalyzer(self.config_data)
+        except ImportError:
+            self.analyzer = None
+        
+        # windowの初期サイズの決定
         screen_width: int = self.winfo_screenwidth()
         screen_height: int = self.winfo_screenheight()
         taskbar_height: int = self.get_taskbar_height() + 55
         self.dafault_window_size = f"{int(screen_width/2)}x{screen_height - taskbar_height}+0+0"
         self.geometry(self.dafault_window_size)
+
+        # バージョンの確認とタイトル表示
         version_name = "Light version" if self.analyzer is None else "Full version"
         self.title(f"Metadata Manager for SD webui Image {version_name}")
-        self.configure(bg="#f0f0f0")
-        self.config_data = configparser.ConfigParser()
-        self.config_data.read(CONFIG_FILE)
-        self.analysis_model = self.config_data.get('DEFAULT', 'analysis_model', fallback='blip2')
-        self.is_torch_loaded = False
 
         # フォントの設定
         ui_font = self.config_data.get('DEFAULT', 'ui_font_name', fallback='Yu Gothic UI')
@@ -40,6 +53,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         text_font_size = self.config_data.get('DEFAULT', 'text_font_size', fallback=14)
         self.text_font = (text_font, int(text_font_size))
         self.ui_font = (ui_font, int(ui_font_size))
+        self.configure(bg="#f0f0f0")
 
         # フォント更新の際に使用するウィジェットの辞書
         self.ui_font_widgets = []
@@ -52,15 +66,24 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         # 終了処理
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
+        # 終了処理中の確認フラグ
+        self.is_closing: bool = False
+
         # グラフウィンドウの初期化
         self.graph_window = None
 
         # 画像のファイルパス及びファイル名
         self.current_file_name = None
         self.current_file_path = None
+
+        # torchロード中の確認フラグ
+        self.is_torch_loaded: bool = False
+        
         #解析中の確認用変数
-        self.is_analyzing = False
-        # blip-2での解析結果
+        self.is_analyzing: bool = False
+        
+        # 解析モデルと解析結果テキスト
+        self.analysis_model = self.config_data.get('DEFAULT', 'analysis_model', fallback='CLIP')
         self.original_caption = None
 
     def get_taskbar_height(self):
@@ -703,6 +726,16 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         graph_checkbutton.grid(row=10, column=1, padx=5, pady=10)
         self.register_widget("ui", graph_checkbutton)
 
+        # blip-2で4bit量子化モデルを使用するかの選択
+        use_4bit_model_label = tk.Label(frame, text="blip-2で4bit量子化モデルを使用:", bg="#f0f0f0", font=self.ui_font)
+        use_4bit_model_label.grid(row=11, column=0, sticky="w")
+        self.register_widget("ui", use_4bit_model_label)
+
+        self.use_4bit_model_var = tk.BooleanVar(frame, self.config_data.getboolean("DEFAULT", "use_4bit_model", fallback=False))
+        use_4bit_checkbutton = tk.Checkbutton(frame, variable=self.use_4bit_model_var, bg="#ffffff", font=self.ui_font)
+        use_4bit_checkbutton.grid(row=11, column=1, padx=5, pady=10)
+        self.register_widget("ui", use_4bit_checkbutton)
+
         # ボタンフレーム
         button_frame = tk.Frame(scrollable_frame, bg="#f0f0f0")
         button_frame.pack(pady=20)
@@ -782,6 +815,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         ui_font_size = self.ui_font_size_var.get()
         text_font_name = self.text_font_name_var.get()
         text_font_size = self.text_font_size_var.get()
+        use_4bit_model = self.use_4bit_model_var.get()
         
         # 設定値を保存（configparserを使用）
         self.config_data['DEFAULT'] = {
@@ -797,7 +831,8 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
             'ui_font_name': ui_font_name,
             'ui_font_size': str(ui_font_size),
             'text_font_name': text_font_name,
-            'text_font_size': str(text_font_size)
+            'text_font_size': str(text_font_size),
+            'use_4bit_model': str(use_4bit_model).lower()
         }
         with open(CONFIG_FILE, 'w') as configfile:
             self.config_data.write(configfile)

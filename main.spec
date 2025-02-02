@@ -3,14 +3,26 @@
 import sys
 import os
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
+from PyInstaller.building.api import PYZ, EXE, COLLECT
 
 block_cipher = None
 
-# tkinterdnd2のデータファイルを収集
-tkdnd_data = collect_data_files('tkinterdnd2')
-
 # プロジェクトのルートディレクトリを取得
 root_dir = SPECPATH
+
+# デスクトップのパスを取得
+desktop_path = os.path.expanduser("~/Desktop")
+
+# ビルドとディストリビューションのパスを設定
+build_path = os.path.join(desktop_path, 'MetadataManager_build')
+dist_path = os.path.join(desktop_path, 'MetadataManager_dist')
+
+# ディレクトリが存在しない場合は作成
+os.makedirs(build_path, exist_ok=True)
+os.makedirs(dist_path, exist_ok=True)
+
+# tkinterdnd2のデータファイルを収集
+tkdnd_data = collect_data_files('tkinterdnd2')
 
 # 追加のデータファイルを指定
 resources_dir = os.path.join(root_dir, 'resources')
@@ -36,6 +48,8 @@ a = Analysis(
     win_private_assemblies=False,
     cipher=block_cipher,
     noarchive=False,
+    workpath=build_path,  # カスタムビルドパスを指定
+    distpath=dist_path,   # カスタムディストリビューションパスを指定
 )
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
@@ -43,21 +57,30 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
     [],
-    name='MetadataManager-ver0.1.0',
+    exclude_binaries=True,
+    name='Metadata Manager for SD webui Image',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
-    upx_exclude=[],
-    runtime_tmpdir=None,
-    console=False,  # コンソールウィンドウを非表示にする
+    upx=False,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    distpath=dist_path,
+)
+
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=False,
+    upx_exclude=[],
+    name='Metadata Manager for SD webui Image',
+    distpath=dist_path,
 )

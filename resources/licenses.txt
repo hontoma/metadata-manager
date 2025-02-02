@@ -1,87 +1,94 @@
-このプロジェクト（Metadata Manager for SD webui Image Light version）は MIT ライセンスの下で公開されています。
 
-MIT License
+当ソフトウェアは「現状のまま」で、明示であるか暗黙であるかを問わず、何らの保証もなく提供されます。ここでいう保証とは、商品性、特定の目的への適合性、および権利非侵害についての保証も含みますが、それに限定されるものではありません。 
+作者は、契約行為、不法行為、またはそれ以外であろうと、ソフトウェアに起因または関連し、あるいはソフトウェアの使用またはその他の扱いによって生じる一切の請求、損害、その他の義務について何らの責任も負わないものとします。
 
-Copyright (c) [2025] [hontoma]
+当ソフトウェアは使用されているオープンソースソフトウェアを提供する団体・組織とは関係ありません。
+またstable diffusionを提供するstability AI、及びwebuiの制作者各位との関係もありません。
 
-以下に定める条件に従い、本ソフトウェアおよび関連文書のファイル（以下「ソフトウェア」）の複製を取得するすべての人に対し、ソフトウェアを無制限に扱うことを無償で許可します。これには、ソフトウェアの複製を使用、複写、変更、結合、掲載、頒布、サブライセンス、および/または販売する権利、およびソフトウェアを提供する相手に同じことを許可する権利も無制限に含まれます。
+当ソフトウェアについて正規のルート以外での販売及び配布を禁止します。
+またソフトウェアのプログラムを無断で解析・分解する行為も禁止します。
 
-上記の著作権表示および本許諾表示を、ソフトウェアのすべての複製または重要な部分に記載するものとします。
+©️2025 hontoma.
 
-ソフトウェアは「現状のまま」で、明示であるか暗黙であるかを問わず、何らの保証もなく提供されます。ここでいう保証とは、商品性、特定の目的への適合性、および権利非侵害についての保証も含みますが、それに限定されるものではありません。 作者または著作権者は、契約行為、不法行為、またはそれ以外であろうと、ソフトウェアに起因または関連し、あるいはソフトウェアの使用またはその他の扱いによって生じる一切の請求、損害、その他の義務について何らの責任も負わないものとします。
-
-注意: このソフトウェアは無料で提供されており、販売を目的とした使用は意図されていません。
-ソフトウェアの再配布は許可されますが、無料で提供されることを条件とします。
 --------------------------------------------------------------------------------
+
+- オープンソースライセンスについての表記
 
 ---このアプリケーションはPython 3.11 を使用しており、Python Software Foundation License (PSF)の下で配布されているPythonの標準ライブラリの一部のモジュールを使用しています。
 
-以下は、使用している主要な外部ライブラリとそのライセンスです：
-PIL (Python Imaging Library / Pillow):
-ライセンス: HPND License
-ウェブサイト: https://python-pillow.org/
+以下は、使用している主要な外部ライブラリとそのライセンスです（このリストはpip-licensesを使用して作成しています）：
+ Name                       Version       License                                                         URL                                                                  
+ Jinja2                     3.1.3         BSD License                                                     https://palletsprojects.com/p/jinja/                                 
+ MarkupSafe                 2.1.5         BSD License                                                     https://palletsprojects.com/p/markupsafe/                            
+ PyYAML                     6.0.2         MIT License                                                     https://pyyaml.org/                                                  
+ accelerate                 1.3.0         Apache Software License                                         https://github.com/huggingface/accelerate                            
+ altgraph                   0.17.4        MIT License                                                     https://altgraph.readthedocs.io                                      
+ bitsandbytes               0.45.1        MIT License                                                     https://github.com/bitsandbytes-foundation/bitsandbytes              
+ certifi                    2024.12.14    Mozilla Public License 2.0 (MPL 2.0)                            https://github.com/certifi/python-certifi                            
+ charset-normalizer         3.4.1         MIT License                                                     https://github.com/jawah/charset_normalizer/blob/master/CHANGELOG.md 
+ colorama                   0.4.6         BSD License                                                     https://github.com/tartley/colorama                                  
+ configparser               7.1.0         MIT License                                                     https://github.com/jaraco/configparser                               
+ contourpy                  1.3.1         BSD License                                                     https://github.com/contourpy/contourpy                               
+ cycler                     0.12.1        BSD License                                                     https://matplotlib.org/cycler/                                       
+ filelock                   3.16.1        The Unlicense (Unlicense)                                       https://github.com/tox-dev/py-filelock                               
+ fonttools                  4.55.6        MIT License                                                     http://github.com/fonttools/fonttools                                
+ fsspec                     2024.12.0     BSD License                                                     https://github.com/fsspec/filesystem_spec                            
+ huggingface-hub            0.27.1        Apache Software License                                         https://github.com/huggingface/huggingface_hub                       
+ idna                       3.10          BSD License                                                     https://github.com/kjd/idna                                          
+ kiwisolver                 1.4.8         BSD License                                                     https://github.com/nucleic/kiwi                                      
+ matplotlib                 3.10.0        Python Software Foundation License                              https://matplotlib.org                                               
+ mpmath                     1.3.0         BSD License                                                     http://mpmath.org/                                                   
+ networkx                   3.2.1         BSD License                                                     https://networkx.org/                                                
+ numpy                      2.2.2         BSD License                                                     https://numpy.org                                                    
+ opencv-python              4.11.0.86     Apache Software License                                         https://github.com/opencv/opencv-python                              
+ packaging                  24.2          Apache Software License; BSD License                            https://github.com/pypa/packaging                                    
+ pefile                     2023.2.7      MIT                                                             https://github.com/erocarrera/pefile                                 
+ piexif                     1.1.3         MIT License                                                     https://github.com/hMatoba/Piexif                                    
+ pillow                     11.1.0        HPND (Historical Permission Notice and Disclaimer)              https://python-pillow.github.io                                      
+ psutil                     6.1.1         BSD License                                                     https://github.com/giampaolo/psutil
+ pyinstaller-hooks-contrib  2025.0        Apache Software License; GNU General Public License v2 (GPLv2)  https://github.com/pyinstaller/pyinstaller-hooks-contrib             
+ pyparsing                  3.2.1         MIT License                                                     https://github.com/pyparsing/pyparsing/                              
+ python-dateutil            2.9.0.post0   Apache Software License; BSD License                            https://github.com/dateutil/dateutil                                 
+ pywin32                    308           Python Software Foundation License                              https://github.com/mhammond/pywin32                                  
+ pywin32-ctypes             0.2.3         BSD-3-Clause                                                    https://github.com/enthought/pywin32-ctypes                          
+ regex                      2024.11.6     Apache Software License                                         https://github.com/mrabarnett/mrab-regex                             
+ requests                   2.32.3        Apache Software License                                         https://requests.readthedocs.io                                      
+ safetensors                0.5.2         Apache Software License                                         https://github.com/huggingface/safetensors                           
+ six                        1.17.0        MIT License                                                     https://github.com/benjaminp/six                                     
+ sympy                      1.13.1        BSD License                                                     https://sympy.org                                                    
+ tkinterdnd2                0.4.2         MIT License                                                     https://github.com/Eliav2/tkinterdnd2                                
+ tokenizers                 0.21.0        Apache Software License                                         https://github.com/huggingface/tokenizers                            
+ torch                      2.5.1+cu124   BSD License                                                     https://pytorch.org/                                                 
+ torchaudio                 2.5.1+cu124   BSD License                                                     https://github.com/pytorch/audio                                     
+ torchvision                0.20.1+cu124  BSD                                                             https://github.com/pytorch/vision                                    
+ tqdm                       4.67.1        MIT License; Mozilla Public License 2.0 (MPL 2.0)               https://tqdm.github.io                                               
+ transformers               4.48.0        Apache Software License                                         https://github.com/huggingface/transformers                          
+ typing_extensions          4.12.2        Python Software Foundation License                              https://github.com/python/typing_extensions                          
+ urllib3                    2.3.0         MIT License                                                     https://github.com/urllib3/urllib3/blob/main/CHANGES.rst             
 
-tkinter:
-ライセンス: Python Software Foundation License
-ウェブサイト: https://docs.python.org/3/library/tkinter.html
+---------------------------------------
 
-tkinterdnd2:
-ライセンス: BSD 3-Clause License
-ウェブサイト: https://github.com/pmgagne/tkinterdnd2
+- 解析に使用するためにダウンロードされるコンポーネント
 
-configparser:
-ライセンス: MIT License
-ウェブサイト: https://docs.python.org/3/library/configparser.html
-
-piexif:
-ライセンス: MIT License
-ウェブサイト: https://github.com/hMatoba/Piexif
-
------ using full version only ------
-
-transformers:
-ライセンス: Apache License 2.0
-ウェブサイト: https://huggingface.co/transformers/
-
-torch:
-ライセンス: BSD 3-Clause License
-ウェブサイト: https://pytorch.org/
-
-numpy:
-ライセンス: BSD 3-Clause License
-ウェブサイト: https://numpy.org/
-
-opencv-python:
-ライセンス: MIT License
-ウェブサイト: https://github.com/opencv/opencv-python
-
-pandas:
-ライセンス: BSD 3-Clause License
-ウェブサイト: https://pandas.pydata.org/
-
-tqdm:
-ライセンス: MIT License, Mozilla Public License 2.0 (MPL 2.0) (デュアルライセンス)
-ウェブサイト: https://github.com/tqdm/tqdm
-
-BLIP-2 (Bootstrapping Language-Image Pre-training):
-ライセンス: BSD 3-Clause License
-ウェブサイト: https://github.com/salesforce/LAVIS/tree/main/projects/blip2
+以下のモデルは初回実行時または必要に応じ自動的にダウンロードされます。
 
 Salesforce/blip2-opt-2.7b:
 ライセンス: BSD 3-Clause License
 ウェブサイト: https://huggingface.co/Salesforce/blip2-opt-2.7b
 
-BLIP-2とSalesforce/blip2-opt-2.7bモデルは、Salesforce, Inc.によって開発され、BSD 3-Clause Licenseの下で公開されています。このライセンスは、ソフトウェアの使用、複製、変更、配布を許可していますが、以下の条件を満たす必要があります：
+openai/clip-vit-base-patch32:
+ライセンス: MIT License
+ウェブサイト: https://github.com/openai/CLIP
 
-1. ソースコードの再配布には、上記の著作権表示、この条件のリスト、および以下の免責事項を含める必要があります。
-2. バイナリ形式での再配布では、配布物に付属のドキュメントおよび/またはその他の資料に、上記の著作権表示、この条件のリスト、および以下の免責事項を含める必要があります。
-3. Salesforceの名前、またはその貢献者の名前を、書面による事前の許可なしに、このソフトウェアから派生した製品を推奨または宣伝するために使用することはできません。
-
-このソフトウェアは著作権所有者および貢献者によって「現状のまま」提供され、商品性および特定目的への適合性についての暗黙の保証を含め、明示または黙示を問わず、いかなる保証も行いません。著作権所有者または貢献者は、契約行為、不法行為、またはそれ以外にかかわらず、ソフトウェアの使用その他の取引に起因または関連して生じた、いかなる直接的、間接的、偶発的、特別、例示的、または結果的損害（代替品またはサービスの調達、使用、データ、または利益の損失、または事業中断を含む）に対しても、たとえそのような損害の可能性について助言を受けていたとしても、一切の責任を負いません。
-
-このアプリケーションはBLIP-2およびSalesforce/blip2-opt-2.7bモデルを使用しており、上記のライセンス条項に従って配布されています。
+MobileNetV3:
+ライセンス: Apache License 2.0
+ウェブサイト: https://github.com/tensorflow/models/tree/master/research/slim/nets/mobilenet
 
 ---------------------------------------
+補足：
+This application was built using PyInstaller (GPLv2 license).
+For more information and source code of PyInstaller, please visit:
+https://github.com/pyinstaller/pyinstaller
 
 各ライブラリの詳細なライセンス条項については、それぞれの公式ウェブサイトやGitHubリポジトリを参照してください。
 

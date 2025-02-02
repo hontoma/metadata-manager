@@ -67,19 +67,47 @@ class ImageAnalyzer:
     def load_blip_model(self):
         """BLIP-2モデルをロードするメソッド"""
         import torch
-        from transformers import Blip2Processor, Blip2ForConditionalGeneration
+        from transformers import Blip2Processor, Blip2ForConditionalGeneration, BitsAndBytesConfig
+        import traceback
+        try:
+            model_path = self.get_model_path("blip2-opt-2.7b")
+            is_use_4bit_model: bool = self.get_latest_config().getboolean("DEFAULT", "use_4bit_model", fallback=False)
 
-        model_path = self.get_model_path("blip2-opt-2.7b")
+            print(f"Loading BLIP-2 model. Use 4-bit: {is_use_4bit_model}")
 
-        if self.blip_model is None:
-            self.blip_processor = Blip2Processor.from_pretrained("Salesforce/blip2-opt-2.7b", cache_dir=model_path)
-            self.blip_model = Blip2ForConditionalGeneration.from_pretrained(
-                "Salesforce/blip2-opt-2.7b",
-                cache_dir=model_path,
-                device_map="auto",
-                torch_dtype=torch.float16,
-                low_cpu_mem_usage=True
-            )
+            from_pretrained_kwargs = {
+                "cache_dir": model_path,
+                "torch_dtype": torch.float16,
+                "low_cpu_mem_usage": True,
+                "device_map": 'auto',
+            }
+
+            if is_use_4bit_model:
+                quantization_config = BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_compute_dtype=torch.float16,
+                    bnb_4bit_use_double_quant=True,
+                    bnb_4bit_quant_type="nf4"
+                )
+                from_pretrained_kwargs["quantization_config"] = quantization_config
+
+            print("Loading BLIP-2 processor...")
+
+            if self.blip_model is None:
+                print("Loading BLIP-2 model...")
+                self.blip_processor = Blip2Processor.from_pretrained("Salesforce/blip2-opt-2.7b", cache_dir=model_path)
+                self.blip_model = Blip2ForConditionalGeneration.from_pretrained("Salesforce/blip2-opt-2.7b", **from_pretrained_kwargs)
+
+            if is_use_4bit_model:
+                # 4ビット量子化を適用
+                print("BLIP-2 model loaded with 4-bit quantization")
+            else:
+                print("BLIP-2 model loaded without 4-bit quantization")
+            
+            return True
+        except Exception as e:
+            traceback.print_exc()
+            return False
 
     def analyze_image_with_blip(self, image_path):
         """画像を解析し、キャプションを生成するメソッド"""
@@ -87,8 +115,13 @@ class ImageAnalyzer:
         try:
             image = self.preprocess_image(image_path)
             inputs = self.blip_processor(image, return_tensors="pt").to(self.blip_model.device)
+
+            # 4bit量子化の場合の追加処理（入力テンソルをfloat16に変換）
+            if self.get_latest_config().getboolean("DEFAULT", "use_4bit_model", fallback=False):
+                inputs = {k: v.to(torch.float16) for k, v in inputs.items()}
+            
             with torch.inference_mode():
-                outputs = self.blip_model.generate(**inputs, min_length=50, max_new_tokens=200, num_beams=3, do_sample=True, temperature=0.8)
+                outputs = self.blip_model.generate(**inputs, min_length=50, max_new_tokens=200, num_beams=5, do_sample=True, temperature=0.8)
             caption_text = self.blip_processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
             return caption_text
         except Exception as e:

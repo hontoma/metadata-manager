@@ -27,7 +27,8 @@ def create_default_config():
         'ui_font_name': '',
         'ui_font_size': 12,
         'text_font_name': '',
-        'text_font_size': 14
+        'text_font_size': 14,
+        'use_4bit_model': 'False'
     }
     
     with open(CONFIG_FILE, 'w') as configfile:
