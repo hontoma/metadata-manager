@@ -72,17 +72,21 @@ class ImageAnalyzer:
         try:
             model_path = self.get_model_path("blip2-opt-2.7b")
             is_use_4bit_model: bool = self.get_latest_config().getboolean("DEFAULT", "use_4bit_model", fallback=False)
+            self.is_torch_with_cuda_version: bool = torch.cuda.is_available()
 
-            print(f"Loading BLIP-2 model. Use 4-bit: {is_use_4bit_model}")
+            torch_dtype = torch.float16 if self.is_torch_with_cuda_version else torch.float32
 
             from_pretrained_kwargs = {
                 "cache_dir": model_path,
-                "torch_dtype": torch.float16,
+                "torch_dtype": torch_dtype,
                 "low_cpu_mem_usage": True,
-                "device_map": 'auto',
             }
 
-            if is_use_4bit_model:
+            if self.is_torch_with_cuda_version:
+                from_pretrained_kwargs["device_map"] = 'auto'
+
+
+            if is_use_4bit_model and self.is_torch_with_cuda_version:
                 quantization_config = BitsAndBytesConfig(
                     load_in_4bit=True,
                     bnb_4bit_compute_dtype=torch.float16,
@@ -91,14 +95,12 @@ class ImageAnalyzer:
                 )
                 from_pretrained_kwargs["quantization_config"] = quantization_config
 
-            print("Loading BLIP-2 processor...")
-
             if self.blip_model is None:
                 print("Loading BLIP-2 model...")
                 self.blip_processor = Blip2Processor.from_pretrained("Salesforce/blip2-opt-2.7b", cache_dir=model_path)
                 self.blip_model = Blip2ForConditionalGeneration.from_pretrained("Salesforce/blip2-opt-2.7b", **from_pretrained_kwargs)
 
-            if is_use_4bit_model:
+            if is_use_4bit_model and self.is_torch_with_cuda_version:
                 # 4ビット量子化を適用
                 print("BLIP-2 model loaded with 4-bit quantization")
             else:

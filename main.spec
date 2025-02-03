@@ -10,6 +10,14 @@ block_cipher = None
 # プロジェクトのルートディレクトリを取得
 root_dir = SPECPATH
 
+# 仮想環境のパスを指定
+home_dir = os.path.expanduser("~")
+
+# cuda対応なしバージョン作成の場合
+venv_site_packages = os.path.join(home_dir, '.python_virtualenvs', 'torch_no_cuda', 'Lib', 'site-packages')
+# cuda12.4バージョン作成の場合
+# venv_site_packages = os.path.join(home_dir, '.python_virtualenvs', 'torch_cuda_124', 'Lib', 'site-packages')
+
 # デスクトップのパスを取得
 desktop_path = os.path.expanduser("~/Desktop")
 
@@ -36,7 +44,7 @@ for file_name in ['version.txt', 'licenses.txt', 'help.txt']:
 
 a = Analysis(
     ['main.py'],
-    pathex=[],
+    pathex=[venv_site_packages],
     binaries=[],
     datas=tkdnd_data + additional_data,
     hiddenimports=['tkinterdnd2', 'metadata_manager'],

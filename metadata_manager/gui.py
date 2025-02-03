@@ -727,7 +727,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         self.register_widget("ui", graph_checkbutton)
 
         # blip-2で4bit量子化モデルを使用するかの選択
-        use_4bit_model_label = tk.Label(frame, text="blip-2で4bit量子化モデルを使用:", bg="#f0f0f0", font=self.ui_font)
+        use_4bit_model_label = tk.Label(frame, text="blip-2で4bit量子化モデルを使用（cuda対応バージョンのみ）:", bg="#f0f0f0", font=self.ui_font)
         use_4bit_model_label.grid(row=11, column=0, sticky="w")
         self.register_widget("ui", use_4bit_model_label)
 
