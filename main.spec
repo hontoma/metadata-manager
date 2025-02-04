@@ -5,6 +5,8 @@ import os
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 from PyInstaller.building.api import PYZ, EXE, COLLECT
 
+# 実行の際の注意: pyinstaller --distpath="~/Desktop/MetadataManager_dist" --workpath="~/Desktop/MetadataManager_build" main.specのようにpathを指定すること。
+
 block_cipher = None
 
 # プロジェクトのルートディレクトリを取得
@@ -13,10 +15,19 @@ root_dir = SPECPATH
 # 仮想環境のパスを指定
 home_dir = os.path.expanduser("~")
 
+# バージョン（必要に応じて書き換えること）
+current_version = "0.1.0"
+
 # cuda対応なしバージョン作成の場合
 venv_site_packages = os.path.join(home_dir, '.python_virtualenvs', 'torch_no_cuda', 'Lib', 'site-packages')
+version_name = "no_cuda"
+
 # cuda12.4バージョン作成の場合
 # venv_site_packages = os.path.join(home_dir, '.python_virtualenvs', 'torch_cuda_124', 'Lib', 'site-packages')
+# version_name = "cuda_12.4"
+
+# アプリケーション名
+application_name = f"Metadata Manager for SD webui Image {version_name} version {current_version}"
 
 # デスクトップのパスを取得
 desktop_path = os.path.expanduser("~/Desktop")
@@ -56,8 +67,8 @@ a = Analysis(
     win_private_assemblies=False,
     cipher=block_cipher,
     noarchive=False,
-    workpath=build_path,  # カスタムビルドパスを指定
-    distpath=dist_path,   # カスタムディストリビューションパスを指定
+    workpath=build_path,
+    distpath=dist_path,
 )
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
@@ -67,7 +78,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='Metadata Manager for SD webui Image',
+    name=application_name,
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -89,6 +100,6 @@ coll = COLLECT(
     strip=False,
     upx=False,
     upx_exclude=[],
-    name='Metadata Manager for SD webui Image',
+    name=application_name,
     distpath=dist_path,
 )

@@ -663,7 +663,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         self.register_widget("text", position_option)
 
         # csvファイル保存時にファイル名をキャプションで置き換えるかの設定
-        replace_label = tk.Label(frame, text="CSV保存時にタイトルを解析結果に置き換え:", bg="#f0f0f0", font=self.ui_font, wraplength=150)
+        replace_label = tk.Label(frame, text="CSV保存時にタイトルを解析結果に置き換え:", bg="#f0f0f0", font=self.ui_font, wraplength=120)
         replace_label.grid(row=5, column=0, padx=5, pady=10, sticky=tk.W)
         self.register_widget("ui", replace_label)
 
@@ -673,7 +673,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         self.register_widget("text", replace_checkbutton)
 
         # csvのタイトルに付けるprefixの設定
-        prefix_label = tk.Label(frame, text="CSV保存時のタイトルの接頭辞:", bg="#f0f0f0", font=self.ui_font, wraplength=150)
+        prefix_label = tk.Label(frame, text="CSV保存時のタイトルの接頭辞:", bg="#f0f0f0", font=self.ui_font, wraplength=120)
         prefix_label.grid(row=6, column=0, padx=5, pady=10, sticky=tk.W)
         self.register_widget("ui", prefix_label)
 
@@ -701,7 +701,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
 
         # CLIPの解析結果で表示するワードの数を指定するスライダー
         self.word_count_var = tk.IntVar(value=int(self.config_data.get('DEFAULT', 'word_count', fallback=5)))
-        word_count_label = tk.Label(frame, text="CLIPで表示するワード数:", bg="#f0f0f0", font=self.ui_font)
+        word_count_label = tk.Label(frame, text="CLIPで表示するワード数:", bg="#f0f0f0", font=self.ui_font, wraplength=120)
         word_count_label.grid(row=9, column=0, sticky="w")
         self.register_widget("ui", word_count_label)
 
@@ -727,7 +727,7 @@ class ImageAnalyzerApp(TkinterDnD.Tk):
         self.register_widget("ui", graph_checkbutton)
 
         # blip-2で4bit量子化モデルを使用するかの選択
-        use_4bit_model_label = tk.Label(frame, text="blip-2で4bit量子化モデルを使用（cuda対応バージョンのみ）:", bg="#f0f0f0", font=self.ui_font)
+        use_4bit_model_label = tk.Label(frame, text="blip-2で4bit量子化を使用（cuda対応バージョンのみ）:", bg="#f0f0f0", font=self.ui_font, wraplength=120)
         use_4bit_model_label.grid(row=11, column=0, sticky="w")
         self.register_widget("ui", use_4bit_model_label)
 

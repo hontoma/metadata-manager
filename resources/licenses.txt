@@ -1,14 +1,30 @@
+MIT License
 
-当ソフトウェアは「現状のまま」で、明示であるか暗黙であるかを問わず、何らの保証もなく提供されます。ここでいう保証とは、商品性、特定の目的への適合性、および権利非侵害についての保証も含みますが、それに限定されるものではありません。 
-作者は、契約行為、不法行為、またはそれ以外であろうと、ソフトウェアに起因または関連し、あるいはソフトウェアの使用またはその他の扱いによって生じる一切の請求、損害、その他の義務について何らの責任も負わないものとします。
+Copyright (c) 2025 hontoma
 
-当ソフトウェアは使用されているオープンソースソフトウェアを提供する団体・組織とは関係ありません。
-またstable diffusionを提供するstability AI、及びwebuiの制作者各位との関係もありません。
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-当ソフトウェアについて正規のルート以外での販売及び配布を禁止します。
-またソフトウェアのプログラムを無断で解析・分解する行為も禁止します。
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-©️2025 hontoma.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+--------------------------------------------------------------------------------
+
+このソフトウェアは、上記のMITライセンスの下で提供されています。
+
+本ソフトウェアは、Stable DiffusionやWebUIの提供者とは無関係です。
 
 --------------------------------------------------------------------------------
 
@@ -58,9 +74,9 @@
  sympy                      1.13.1        BSD License                                                     https://sympy.org                                                    
  tkinterdnd2                0.4.2         MIT License                                                     https://github.com/Eliav2/tkinterdnd2                                
  tokenizers                 0.21.0        Apache Software License                                         https://github.com/huggingface/tokenizers                            
- torch                      2.5.1+cu124   BSD License                                                     https://pytorch.org/                                                 
- torchaudio                 2.5.1+cu124   BSD License                                                     https://github.com/pytorch/audio                                     
- torchvision                0.20.1+cu124  BSD                                                             https://github.com/pytorch/vision                                    
+ torch                      2.6.0(+cu124)   BSD License                                                     https://pytorch.org/                                                 
+ torchaudio                 2.6.0(+cu124)   BSD License                                                     https://github.com/pytorch/audio                                     
+ torchvision                0.21.0(+cu124)  BSD                                                             https://github.com/pytorch/vision                                    
  tqdm                       4.67.1        MIT License; Mozilla Public License 2.0 (MPL 2.0)               https://tqdm.github.io                                               
  transformers               4.48.0        Apache Software License                                         https://github.com/huggingface/transformers                          
  typing_extensions          4.12.2        Python Software Foundation License                              https://github.com/python/typing_extensions                          
@@ -85,10 +101,6 @@ MobileNetV3:
 ウェブサイト: https://github.com/tensorflow/models/tree/master/research/slim/nets/mobilenet
 
 ---------------------------------------
-補足：
-This application was built using PyInstaller (GPLv2 license).
-For more information and source code of PyInstaller, please visit:
-https://github.com/pyinstaller/pyinstaller
 
 各ライブラリの詳細なライセンス条項については、それぞれの公式ウェブサイトやGitHubリポジトリを参照してください。
 
