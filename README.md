@@ -12,7 +12,7 @@ Metadata Managerは、画像ファイルのメタデータを管理し、AIを�
 ## インストール
 
 1. このリポジトリをクローンします：
-   git clone https://github.com/yourusername/metadata-manager.git
+   git clone https://github.com/hontma/metadata-manager.git
 2. プロジェクトディレクトリに移動します：
    cd metadata-manager
 3. 必要な依存関係をインストールします：
@@ -44,7 +44,7 @@ Metadata Managerは、画像ファイルのメタデータを管理し、AIを�
 
 ## コントリビューション
 
-バグ報告や機能リクエストは、GitHubの[Issues](https://github.com/yourusername/metadata-manager/issues)ページにて受け付けています。
+バグ報告や機能リクエストは、GitHubの[Issues](https://github.com/hontoma/metadata-manager/issues)ページにて受け付けています。
 
 プルリクエストも歓迎します。大きな変更を加える場合は、まずissueを開いて議論してください。
 
